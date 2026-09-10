@@ -483,22 +483,22 @@
 
   // Sample data used until a real endpoint is connected.
   const SAMPLE_VIDEOS = [
-    { title: "Beach Day", isoDate: "2024-07-15", youtubeId: "aqz-KE-bpKQ",
+    { title: "Beach Day", isoDate: "2024-07-15", source: "youtube", videoId: "aqz-KE-bpKQ",
       people: ["Emma", "Jack"], tags: ["Trips", "Summer"], location: "Tybee Island",
       caption: "The whole crew's first trip to the coast." },
-    { title: "Grandma's 80th", isoDate: "2024-03-02", youtubeId: "YE7VzlLtp-4",
+    { title: "Grandma's 80th", isoDate: "2024-03-02", source: "youtube", videoId: "YE7VzlLtp-4",
       people: ["Grandma", "Mom", "Dad"], tags: ["Birthdays", "Family"], location: "Home",
       caption: "Three generations, one very big cake." },
-    { title: "First Steps", isoDate: "2024-01-20", youtubeId: "TLkA0RELQ1g",
+    { title: "First Steps", isoDate: "2024-01-20", source: "youtube", videoId: "TLkA0RELQ1g",
       people: ["Jack"], tags: ["Milestones", "Family"], location: "Home",
       caption: "It happened right after breakfast." },
-    { title: "Backyard Camp-Out", isoDate: "2023-08-11", youtubeId: "aqz-KE-bpKQ",
+    { title: "Backyard Camp-Out", isoDate: "2023-08-11", source: "youtube", videoId: "aqz-KE-bpKQ",
       people: ["Emma", "Dad"], tags: ["Everyday", "Summer"], location: "Home",
       caption: "Tents, flashlights, and too many marshmallows." },
-    { title: "Winter Recital", isoDate: "2023-12-09", youtubeId: "YE7VzlLtp-4",
+    { title: "Winter Recital", isoDate: "2023-12-09", source: "youtube", videoId: "YE7VzlLtp-4",
       people: ["Emma"], tags: ["Milestones"], location: "School",
       caption: "Front row seats, nervous smiles." },
-    { title: "Sunday Pancakes", isoDate: "2023-10-08", youtubeId: "TLkA0RELQ1g",
+    { title: "Sunday Pancakes", isoDate: "2023-10-08", source: "youtube", videoId: "TLkA0RELQ1g",
       people: ["Mom", "Jack"], tags: ["Everyday"], location: "Home",
       caption: "A very ordinary, very good morning." }
   ];
@@ -519,12 +519,19 @@
 
   // ---------- turning a spreadsheet row into a video ----------
 
-  function extractYouTubeId(raw){
+  function extractVideoRef(raw){
     if (!raw) return null;
     const text = String(raw).trim();
-    const urlMatch = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
-    if (urlMatch) return urlMatch[1];
-    if (/^[\w-]{11}$/.test(text)) return text;
+
+    // YouTube: full URL or bare 11-character ID
+    const ytMatch = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    if (ytMatch) return { source: 'youtube', id: ytMatch[1] };
+    if (/^[\w-]{11}$/.test(text)) return { source: 'youtube', id: text };
+
+    // Google Drive: /file/d/FILE_ID/... or ?id=FILE_ID
+    const driveMatch = text.match(/drive\.google\.com\/file\/d\/([\w-]+)/) || text.match(/[?&]id=([\w-]+)/);
+    if (driveMatch) return { source: 'drive', id: driveMatch[1] };
+
     return null;
   }
 
@@ -554,12 +561,13 @@
   function rowsToVideos(rows){
     return rows
       .map(row => {
-        const id = extractYouTubeId(pick(row, ["YouTube Link", "Youtube Link", "youtube link"]));
-        if (!id) return null;
+        const ref = extractVideoRef(pick(row, ["YouTube Link", "Youtube Link", "youtube link", "Video Link", "Video link"]));
+        if (!ref) return null;
         return {
           title: String(pick(row, ["Video Title", "Title", "title"])).trim() || "Untitled",
           isoDate: toIsoDate(pick(row, ["Video Date", "Date", "date"])),
-          youtubeId: id,
+          source: ref.source,
+          videoId: ref.id,
           people: splitList(pick(row, ["People", "people"])),
           tags: splitList(pick(row, ["Tags", "tags"])),
           caption: String(pick(row, ["Comments/Description", "Caption", "caption", "Description"])).trim(),
@@ -661,7 +669,7 @@
       const locationText = v.location ? ` · ${v.location}` : '';
       card.innerHTML = `
         <div class="card__photo">
-          <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" alt="" loading="lazy">
+          <img src="${thumbnailFor(v)}" alt="" loading="lazy">
           <div class="card__play">
             <svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>
           </div>
@@ -684,8 +692,22 @@
   const modalCaption = document.getElementById('modalCaption');
   const modalClose = document.getElementById('modalClose');
 
+  function thumbnailFor(video){
+    if (video.source === 'drive'){
+      return `https://drive.google.com/thumbnail?id=${video.videoId}&sz=w400`;
+    }
+    return `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
+  }
+
+  function embedFor(video){
+    if (video.source === 'drive'){
+      return `<iframe src="https://drive.google.com/file/d/${video.videoId}/preview" title="${video.title}" allow="autoplay" allowfullscreen></iframe>`;
+    }
+    return `<iframe src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0" title="${video.title}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
   function openModal(video){
-    modalFrameWrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&rel=0" title="${video.title}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    modalFrameWrap.innerHTML = embedFor(video);
     modalTitle.textContent = video.title;
     modalCaption.textContent = video.caption;
     modalBackdrop.dataset.open = 'true';
