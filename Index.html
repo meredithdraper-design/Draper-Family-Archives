@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>The Draper Family Yearbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+
+  /* ============================================
+     DESIGN DRAFT ONLY -- for comparing looks.
+     Uses the same sample videos as the other version;
+     not wired up to the spreadsheet. If you like this
+     direction, the data hookup carries over as-is.
+     ============================================ */
+
+  :root{
+    --paper: #F6F7F9;
+    --panel: #FFFFFF;
+    --line: #E1E4EA;
+    --ink: #23262B;
+    --ink-soft: #6B7280;
+    --maroon: #24476B;
+    --maroon-light: #3E6E95;
+    --gold: #9DB8CE;
+    --gold-soft: #C7D6E3;
+    --shadow-rgb: 28,36,46;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: linear-gradient(180deg, #F8F9FB 0%, #F1F3F6 100%);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .page-frame{
+    margin: 18px;
+    border: 6px double var(--gold);
+    padding: 8px 0 12px;
+    min-height: calc(100vh - 36px);
+  }
+
+  /* ---------- cover ---------- */
+
+  .cover{
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 20px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cover-in 0.6s ease forwards;
+  }
+
+  @keyframes cover-in{ to{ opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce){
+    .cover{ animation: none; opacity: 1; transform: none; }
+  }
+
+  .crest{
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+    box-shadow: 0 6px 16px rgba(var(--shadow-rgb), 0.22);
+  }
+
+  .cover h1{
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 4.8vw, 3.1rem);
+    margin: 0 0 8px;
+    color: var(--maroon);
+  }
+
+  .cover p{
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    margin: 0 auto;
+  }
+
+  .ornament{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 22px auto 0;
+    max-width: 260px;
+  }
+  .ornament .line{ flex: 1; height: 1px; }
+  .ornament .line.left{ background: linear-gradient(to right, transparent, var(--gold)); }
+  .ornament .line.right{ background: linear-gradient(to left, transparent, var(--gold)); }
+  .ornament .diamond{
+    width: 7px; height: 7px;
+    background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+    transform: rotate(45deg);
+  }
+
+  /* ---------- toolbar ---------- */
+
+  .toolbar{
+    max-width: 820px;
+    margin: 30px auto 0;
+    padding: 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    justify-content: center;
+  }
+
+  .search-wrap{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 6px 2px;
+    flex: 1 1 260px;
+    max-width: 360px;
+  }
+
+  #search{
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 0;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 0.98rem;
+    color: var(--ink);
+    background: transparent;
+  }
+  #search::placeholder{ color: #A69A82; }
+
+  select{
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.9rem;
+    color: var(--maroon);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 6px 20px 6px 2px;
+    cursor: pointer;
+  }
+
+  .select-wrap{ position: relative; }
+  .select-wrap::after{
+    content: "";
+    position: absolute;
+    right: 4px; top: 50%;
+    width: 7px; height: 7px;
+    border-right: 1.5px solid var(--ink-soft);
+    border-bottom: 1.5px solid var(--ink-soft);
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+
+  /* ---------- section tabs (tags) ---------- */
+
+  .chips{
+    max-width: 820px;
+    margin: 22px auto 0;
+    padding: 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px;
+  }
+
+  .chip{
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    padding: 2px 0 5px;
+    border-bottom: 1px solid transparent;
+  }
+
+  .chip:hover{ color: var(--ink); }
+  .chip:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+
+  .chip[data-active="true"]{
+    color: var(--maroon);
+    border-bottom: 1px solid var(--gold);
+  }
+
+  /* ---------- status ---------- */
+
+  .status-line{
+    max-width: 820px;
+    margin: 22px auto 0;
+    padding: 0 28px;
+    text-align: center;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  /* ---------- gallery ---------- */
+
+  .gallery{
+    max-width: 1040px;
+    margin: 26px auto 70px;
+    padding: 0 36px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 38px 30px;
+  }
+
+  .card{
+    background: var(--panel);
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+    transition: transform 0.2s ease;
+  }
+
+  .card:hover, .card:focus-visible{
+    transform: translateY(-3px);
+    filter: drop-shadow(0 10px 18px rgba(var(--shadow-rgb), 0.16));
+  }
+  .card:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+
+  .card__photo{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--line);
+    border: 1px solid var(--gold);
+    box-shadow: 0 0 0 4px var(--panel), 0 0 0 5px var(--line);
+  }
+
+  .card__photo::before{
+    content: "";
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 16px; height: 16px;
+    background: linear-gradient(135deg, var(--maroon-light), var(--gold));
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    z-index: 1;
+  }
+
+  .card__photo img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(1.05) contrast(1.02) brightness(1.03);
+  }
+
+  .card__play{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--shadow-rgb), 0.18);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .card:hover .card__play, .card:focus-visible .card__play{ opacity: 1; }
+
+  .card__rule{
+    height: 1px;
+    background: var(--line);
+    margin: 12px 2px 0;
+  }
+
+  .card__title{
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 1.02rem;
+    margin: 10px 2px 2px;
+    color: var(--maroon);
+  }
+
+  .card__meta{
+    margin: 0 2px;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- empty / notices ---------- */
+
+  .notice{
+    max-width: 400px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 28px 24px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    display: none;
+  }
+  .notice h2{
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    margin: 0 0 6px;
+    color: var(--maroon);
+  }
+  .notice p{ color: var(--ink-soft); margin: 0; font-size: 0.92rem; }
+
+  .notice code{
+    display: block;
+    margin-top: 10px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.78rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: var(--ink-soft);
+    word-break: break-all;
+  }
+
+  /* ---------- modal ---------- */
+
+  .modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 14, 10, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .modal-backdrop[data-open="true"]{ display: flex; }
+
+  .modal{
+    background: var(--panel);
+    border: 6px double var(--gold);
+    max-width: 740px;
+    width: 100%;
+    padding: 20px;
+    position: relative;
+  }
+
+  .modal__close{
+    position: absolute;
+    top: -16px; right: -16px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--maroon);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .modal__close:focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  .modal__frame-wrap{
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    overflow: hidden;
+    background: #000;
+  }
+  .modal__frame-wrap iframe{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  .modal__title{
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 18px 4px 2px;
+    color: var(--maroon);
+  }
+  .modal__caption{
+    margin: 0 4px;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.94rem;
+  }
+
+  footer{
+    text-align: center;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    padding: 20px 0 34px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page-frame">
+
+  <div class="cover">
+    <div class="crest">D</div>
+    <h1>The Draper Family</h1>
+    <p>Every year, one more chapter worth watching again.</p>
+    <div class="ornament"><span class="line left"></span><span class="diamond"></span><span class="line right"></span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search the yearbook…" autocomplete="off">
+    </div>
+    <div class="select-wrap">
+      <select id="sortBy" aria-label="Sort videos">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="person-asc">By person, A–Z</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <p class="status-line" id="status"></p>
+
+  <div class="gallery" id="gallery"></div>
+
+  <div class="notice" id="loading">
+    <h2>Loading videos…</h2>
+    <p>Fetching the latest list from the spreadsheet.</p>
+  </div>
+
+  <div class="notice" id="empty">
+    <h2>Nothing here yet</h2>
+    <p>Try a different search, or pick another tag above.</p>
+  </div>
+
+  <div class="notice" id="errorNotice">
+    <h2>Couldn't load your videos</h2>
+    <p>Showing the sample videos instead. Double-check that DATA_URL is correct and that the Apps Script is deployed with "Anyone" access.</p>
+    <code id="errorDetail"></code>
+  </div>
+
+  <footer>Made for the family, one video at a time.</footer>
+
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <button class="modal__close" id="modalClose" aria-label="Close video">✕</button>
+    <div class="modal__frame-wrap" id="modalFrameWrap"></div>
+    <h2 class="modal__title" id="modalTitle"></h2>
+    <p class="modal__caption" id="modalCaption"></p>
+  </div>
+</div>
+
+<script>
+
+  // Paste your Apps Script Web App URL here, with your
+  // own secret key on the end, e.g.:
+  // "https://script.google.com/macros/s/AKfycb.../exec?key=your-secret-here"
+  // Leave it as-is to see the built-in sample data below.
+  const DATA_URL = "https://script.google.com/macros/s/AKfycbz_TqOErPH3YMpNKVh4LRVz7fjkqT0P7amTz-wyudVGYIknLLPeFG_my16lMisgCwHzBg/exec?key=@Uburn";
+
+  // Sample data used until a real endpoint is connected.
+  const SAMPLE_VIDEOS = [
+    { title: "Beach Day", isoDate: "2024-07-15", youtubeId: "aqz-KE-bpKQ",
+      people: ["Emma", "Jack"], tags: ["Trips", "Summer"], location: "Tybee Island",
+      caption: "The whole crew's first trip to the coast." },
+    { title: "Grandma's 80th", isoDate: "2024-03-02", youtubeId: "YE7VzlLtp-4",
+      people: ["Grandma", "Mom", "Dad"], tags: ["Birthdays", "Family"], location: "Home",
+      caption: "Three generations, one very big cake." },
+    { title: "First Steps", isoDate: "2024-01-20", youtubeId: "TLkA0RELQ1g",
+      people: ["Jack"], tags: ["Milestones", "Family"], location: "Home",
+      caption: "It happened right after breakfast." },
+    { title: "Backyard Camp-Out", isoDate: "2023-08-11", youtubeId: "aqz-KE-bpKQ",
+      people: ["Emma", "Dad"], tags: ["Everyday", "Summer"], location: "Home",
+      caption: "Tents, flashlights, and too many marshmallows." },
+    { title: "Winter Recital", isoDate: "2023-12-09", youtubeId: "YE7VzlLtp-4",
+      people: ["Emma"], tags: ["Milestones"], location: "School",
+      caption: "Front row seats, nervous smiles." },
+    { title: "Sunday Pancakes", isoDate: "2023-10-08", youtubeId: "TLkA0RELQ1g",
+      people: ["Mom", "Jack"], tags: ["Everyday"], location: "Home",
+      caption: "A very ordinary, very good morning." }
+  ];
+
+  let videos = [];
+  let allTags = ['All'];
+  let activeTag = 'All';
+
+  const galleryEl = document.getElementById('gallery');
+  const chipsEl = document.getElementById('chips');
+  const statusEl = document.getElementById('status');
+  const emptyEl = document.getElementById('empty');
+  const loadingEl = document.getElementById('loading');
+  const errorEl = document.getElementById('errorNotice');
+  const errorDetailEl = document.getElementById('errorDetail');
+  const searchEl = document.getElementById('search');
+  const sortEl = document.getElementById('sortBy');
+
+  // ---------- turning a spreadsheet row into a video ----------
+
+  function extractYouTubeId(raw){
+    if (!raw) return null;
+    const text = String(raw).trim();
+    const urlMatch = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    if (urlMatch) return urlMatch[1];
+    if (/^[\w-]{11}$/.test(text)) return text;
+    return null;
+  }
+
+  function splitList(raw){
+    if (!raw) return [];
+    return String(raw).split(/[,;]/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function toIsoDate(raw){
+    if (!raw) return "0000-00-00";
+    const text = String(raw).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+    const parsed = new Date(text);
+    if (!isNaN(parsed)) return parsed.toISOString().slice(0, 10);
+    return text;
+  }
+
+  // Looks for a value under any of several possible header names,
+  // so the sheet's own column names can be used as-is.
+  function pick(row, names){
+    for (const name of names){
+      if (row[name] !== undefined && row[name] !== null && row[name] !== "") return row[name];
+    }
+    return "";
+  }
+
+  function rowsToVideos(rows){
+    return rows
+      .map(row => {
+        const id = extractYouTubeId(pick(row, ["YouTube Link", "Youtube Link", "youtube link"]));
+        if (!id) return null;
+        return {
+          title: String(pick(row, ["Video Title", "Title", "title"])).trim() || "Untitled",
+          isoDate: toIsoDate(pick(row, ["Video Date", "Date", "date"])),
+          youtubeId: id,
+          people: splitList(pick(row, ["People", "people"])),
+          tags: splitList(pick(row, ["Tags", "tags"])),
+          caption: String(pick(row, ["Comments/Description", "Caption", "caption", "Description"])).trim(),
+          location: String(pick(row, ["Location", "location"])).trim()
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function loadVideos(){
+    if (!DATA_URL || DATA_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE"){
+      videos = SAMPLE_VIDEOS;
+      finishLoading();
+      return;
+    }
+    fetch(DATA_URL)
+      .then(res => {
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.error) throw new Error(data.error);
+        const parsed = rowsToVideos(data);
+        videos = parsed.length ? parsed : SAMPLE_VIDEOS;
+        if (!parsed.length){
+          showError("The endpoint responded but no rows had a usable YouTube link.");
+        }
+        finishLoading();
+      })
+      .catch(err => {
+        videos = SAMPLE_VIDEOS;
+        showError(err.message || String(err));
+        finishLoading();
+      });
+  }
+
+  function showError(detail){
+    errorEl.style.display = 'block';
+    errorDetailEl.textContent = detail;
+  }
+
+  function finishLoading(){
+    loadingEl.style.display = 'none';
+    allTags = ['All', ...Array.from(new Set(videos.flatMap(v => v.tags)))];
+    renderChips();
+    renderGallery();
+  }
+
+  // ---------- rendering ----------
+
+  function renderChips(){
+    chipsEl.innerHTML = '';
+    allTags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = tag;
+      btn.dataset.active = (tag === activeTag).toString();
+      btn.addEventListener('click', () => { activeTag = tag; renderChips(); renderGallery(); });
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  function formatDate(iso){
+    const d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function matches(video, query){
+    const haystack = [video.title, video.caption, video.location, formatDate(video.isoDate), ...video.tags, ...video.people]
+      .join(' ').toLowerCase();
+    return haystack.includes(query);
+  }
+
+  function sortVideos(list){
+    const mode = sortEl.value;
+    const sorted = [...list];
+    if (mode === 'date-desc') sorted.sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+    else if (mode === 'date-asc') sorted.sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+    else if (mode === 'person-asc') sorted.sort((a, b) => (a.people[0] || '').localeCompare(b.people[0] || ''));
+    return sorted;
+  }
+
+  function renderGallery(){
+    const query = searchEl.value.trim().toLowerCase();
+    let filtered = videos.filter(v => {
+      const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
+      const searchOk = query === '' || matches(v, query);
+      return tagOk && searchOk;
+    });
+    filtered = sortVideos(filtered);
+
+    galleryEl.innerHTML = '';
+    filtered.forEach(v => {
+      const card = document.createElement('button');
+      card.className = 'card';
+      card.setAttribute('aria-label', `Play ${v.title}`);
+      const peopleText = v.people.length ? `With ${v.people.join(' & ')}` : '';
+      const locationText = v.location ? ` · ${v.location}` : '';
+      card.innerHTML = `
+        <div class="card__photo">
+          <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" alt="" loading="lazy">
+          <div class="card__play">
+            <svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>
+          </div>
+        </div>
+        <div class="card__rule"></div>
+        <p class="card__title">${v.title}</p>
+        <p class="card__meta">${formatDate(v.isoDate)}${peopleText ? ' · ' + peopleText : ''}${locationText}</p>
+      `;
+      card.addEventListener('click', () => openModal(v));
+      galleryEl.appendChild(card);
+    });
+
+    emptyEl.style.display = filtered.length === 0 ? 'block' : 'none';
+    statusEl.textContent = `Showing ${filtered.length} of ${videos.length} video${videos.length === 1 ? '' : 's'}`;
+  }
+
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalFrameWrap = document.getElementById('modalFrameWrap');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalCaption = document.getElementById('modalCaption');
+  const modalClose = document.getElementById('modalClose');
+
+  function openModal(video){
+    modalFrameWrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&rel=0" title="${video.title}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    modalTitle.textContent = video.title;
+    modalCaption.textContent = video.caption;
+    modalBackdrop.dataset.open = 'true';
+    modalClose.focus();
+  }
+  function closeModal(){
+    modalBackdrop.dataset.open = 'false';
+    modalFrameWrap.innerHTML = '';
+  }
+  modalClose.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  searchEl.addEventListener('input', renderGallery);
+  sortEl.addEventListener('change', renderGallery);
+
+  loadingEl.style.display = 'block';
+  loadVideos();
+
+</script>
+</body>
+</html>
