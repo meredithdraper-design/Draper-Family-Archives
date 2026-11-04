@@ -323,6 +323,27 @@
   }
   .card:hover .card__play, .card:focus-visible .card__play{ opacity: 1; }
 
+  /* Audio-only recordings get a designed panel instead of a thumbnail */
+  .card__audio{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(255,255,255,0.92);
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.18), transparent 60%),
+      linear-gradient(160deg, var(--maroon-light), var(--maroon));
+  }
+  .card__badge{
+    font-variant: small-caps;
+    letter-spacing: 0.08em;
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+
   .card__rule{
     height: 1px;
     background: var(--line);
@@ -423,6 +444,32 @@
     position: absolute; inset: 0;
     width: 100%; height: 100%;
     border: none;
+  }
+
+  /* Audio-only layout: a compact player panel instead of a 16:9 screen */
+  .modal__frame-wrap.is-audio{
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 34px 24px;
+    color: rgba(255,255,255,0.92);
+    background:
+      radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.16), transparent 60%),
+      linear-gradient(160deg, var(--maroon-light), var(--maroon));
+  }
+  .modal__frame-wrap.is-audio audio{
+    width: 100%;
+    max-width: 560px;
+  }
+  .modal__frame-wrap.is-audio iframe{
+    position: static;
+    width: 100%;
+    max-width: 560px;
+    height: 220px;
+    border-radius: 6px;
   }
 
   .modal__title{
@@ -558,6 +605,9 @@
     if (!raw) return null;
     const text = String(raw).trim();
 
+    // Direct audio file: a full URL or a path in this repo, e.g. audio/grandpa.mp3
+    if (/\.(mp3|m4a|wav|ogg|aac)(\?.*)?$/i.test(text)) return { source: 'audio-file', id: text };
+
     // YouTube: full URL or bare 11-character ID
     const ytMatch = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
     if (ytMatch) return { source: 'youtube', id: ytMatch[1] };
@@ -598,10 +648,13 @@
       .map(row => {
         const ref = extractVideoRef(pick(row, ["YouTube Link", "Youtube Link", "youtube link", "Video Link", "Video link"]));
         if (!ref) return null;
+        const typeText = String(pick(row, ["Type", "Media Type", "type"])).trim().toLowerCase();
+        const kind = (typeText === 'audio' || ref.source === 'audio-file') ? 'audio' : 'video';
         return {
           title: String(pick(row, ["Video Title", "Title", "title"])).trim() || "Untitled",
           isoDate: toIsoDate(pick(row, ["Video Date", "Date", "date"])),
           source: ref.source,
+          kind: kind,
           videoId: ref.id,
           people: splitList(pick(row, ["People", "people"])),
           tags: splitList(pick(row, ["Tags", "tags"])),
@@ -702,9 +755,22 @@
       card.setAttribute('aria-label', `Play ${v.title}`);
       const peopleText = v.people.length ? `With ${v.people.join(' & ')}` : '';
       const locationText = v.location ? ` · ${v.location}` : '';
+      const photoInner = v.kind === 'audio'
+        ? `<div class="card__audio">
+             <svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true">
+               <rect x="2"  y="20" width="6" height="12" rx="3"/>
+               <rect x="14" y="10" width="6" height="32" rx="3"/>
+               <rect x="26" y="2"  width="6" height="48" rx="3"/>
+               <rect x="38" y="14" width="6" height="24" rx="3"/>
+               <rect x="50" y="6"  width="6" height="40" rx="3"/>
+               <rect x="62" y="18" width="6" height="16" rx="3"/>
+             </svg>
+             <span class="card__badge">Audio recording</span>
+           </div>`
+        : `<img src="${thumbnailFor(v)}" alt="" loading="lazy">`;
       card.innerHTML = `
         <div class="card__photo">
-          <img src="${thumbnailFor(v)}" alt="" loading="lazy">
+          ${photoInner}
           <div class="card__play">
             <svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>
           </div>
@@ -718,7 +784,7 @@
     });
 
     emptyEl.style.display = filtered.length === 0 ? 'block' : 'none';
-    statusEl.textContent = `Showing ${filtered.length} of ${videos.length} video${videos.length === 1 ? '' : 's'}`;
+    statusEl.textContent = `Showing ${filtered.length} of ${videos.length} ${videos.length === 1 ? 'item' : 'items'}`;
   }
 
   const modalBackdrop = document.getElementById('modalBackdrop');
@@ -735,6 +801,11 @@
   }
 
   function embedFor(video){
+    if (video.source === 'audio-file'){
+      const waves = `<svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true"><rect x="2" y="20" width="6" height="12" rx="3"/><rect x="14" y="10" width="6" height="32" rx="3"/><rect x="26" y="2" width="6" height="48" rx="3"/><rect x="38" y="14" width="6" height="24" rx="3"/><rect x="50" y="6" width="6" height="40" rx="3"/><rect x="62" y="18" width="6" height="16" rx="3"/></svg>`;
+      const src = /%[0-9A-Fa-f]{2}/.test(video.videoId) ? video.videoId : encodeURI(video.videoId);
+      return `${waves}<audio controls autoplay src="${src}"></audio>`;
+    }
     if (video.source === 'drive'){
       return `<iframe src="https://drive.google.com/file/d/${video.videoId}/preview" title="${video.title}" allow="autoplay" allowfullscreen></iframe>`;
     }
@@ -742,6 +813,7 @@
   }
 
   function openModal(video){
+    modalFrameWrap.className = 'modal__frame-wrap' + (video.kind === 'audio' ? ' is-audio' : '');
     modalFrameWrap.innerHTML = embedFor(video);
     modalTitle.textContent = video.title;
     modalCaption.textContent = video.caption;
