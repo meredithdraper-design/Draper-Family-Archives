@@ -709,7 +709,9 @@
 
   function finishLoading(){
     loadingEl.style.display = 'none';
-    allTags = ['All', ...Array.from(new Set(videos.flatMap(v => v.tags)))];
+    const uniqueTags = Array.from(new Set(videos.flatMap(v => v.tags)));
+    uniqueTags.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }));
+    allTags = ['All', ...uniqueTags];
     renderChips();
     renderGallery();
   }
@@ -734,10 +736,70 @@
     return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   }
 
-  function matches(video, query){
-    const haystack = [video.title, video.caption, video.location, formatDate(video.isoDate), ...video.tags, ...video.people]
-      .join(' ').toLowerCase();
-    return haystack.includes(query);
+  // ---------- search ----------
+  // Every word you type must be found somewhere in the item's title,
+  // description, tags, people, location, date, or type. Words can be
+  // partial ("birth" finds "Birthday") and plurals/endings are forgiven
+  // ("sings", "singing" and "sing" all find each other). Accents,
+  // capitals, and punctuation are ignored.
+
+  function normalizeText(s){
+    return String(s || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/['\u2019]s\b/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  }
+
+  function stemWord(w){
+    if (w.length <= 3) return w;
+    let r = w;
+    if (r.endsWith('ies') && r.length > 4){
+      r = r.slice(0, -3) + 'y';
+    } else if (r.endsWith('ing') && r.length > 5){
+      r = r.slice(0, -3);
+      if (/([a-z])\1$/.test(r)) r = r.slice(0, -1);
+    } else if (r.endsWith('ed') && r.length > 4){
+      r = r.slice(0, -2);
+      if (/([a-z])\1$/.test(r)) r = r.slice(0, -1);
+    } else if (r.endsWith('es') && r.length > 4){
+      r = r.slice(0, -2);
+    } else if (r.endsWith('s') && !r.endsWith('ss')){
+      r = r.slice(0, -1);
+    }
+    return r;
+  }
+
+  function dateWords(iso){
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return String(iso);
+    const long = d.toLocaleDateString('en-US', { month: 'long' });
+    const short = d.toLocaleDateString('en-US', { month: 'short' });
+    return `${long} ${short} ${d.getFullYear()} ${d.getDate()} ${iso}`;
+  }
+
+  function searchIndexFor(video){
+    if (video._idx) return video._idx;
+    const parts = [
+      video.title, video.caption, video.location,
+      ...video.tags, ...video.people,
+      dateWords(video.isoDate),
+      video.kind === 'audio' ? 'audio recording' : 'video'
+    ];
+    const text = normalizeText(parts.join(' '));
+    const stemText = text.split(' ').map(stemWord).join(' ');
+    video._idx = { text, stemText };
+    return video._idx;
+  }
+
+  function queryTokens(raw){
+    return normalizeText(raw).split(' ').filter(Boolean);
+  }
+
+  function matches(video, tokens){
+    const idx = searchIndexFor(video);
+    return tokens.every(t => idx.text.includes(t) || idx.stemText.includes(stemWord(t)));
   }
 
   function sortVideos(list){
@@ -750,10 +812,10 @@
   }
 
   function renderGallery(){
-    const query = searchEl.value.trim().toLowerCase();
+    const tokens = queryTokens(searchEl.value);
     let filtered = videos.filter(v => {
       const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
-      const searchOk = query === '' || matches(v, query);
+      const searchOk = tokens.length === 0 || matches(v, tokens);
       return tagOk && searchOk;
     });
     filtered = sortVideos(filtered);
