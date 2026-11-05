@@ -208,6 +208,45 @@
     cursor: pointer;
   }
 
+  .surprise-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+    border: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.22);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .surprise-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 7px 16px rgba(var(--shadow-rgb), 0.28);
+  }
+  .surprise-btn:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+
+  .modal__again{
+    margin: 16px 4px 0;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+    color: var(--maroon);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--gold);
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .modal__again:hover{ color: var(--maroon-light); }
+  .modal__again:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+
   .select-wrap{ position: relative; }
   .select-wrap::after{
     content: "";
@@ -274,6 +313,143 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: 38px 30px;
+  }
+
+  /* ---------- home view: highlights + year groups ---------- */
+
+  .home{
+    max-width: 1040px;
+    margin: 26px auto 70px;
+    padding: 0 36px;
+  }
+
+  .cards{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 38px 30px;
+  }
+
+  .section{ margin-bottom: 58px; }
+
+  .section__head{
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .section__title{
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--maroon);
+    margin: 0;
+  }
+  .section__title.is-year{ font-size: 2rem; }
+  .section__sub{
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .section__rule{
+    flex: 1;
+    height: 1px;
+    align-self: center;
+    background: linear-gradient(to right, var(--gold), transparent);
+  }
+
+  .browse-divider{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 6px 0 40px;
+    color: var(--ink-soft);
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    font-size: 1.05rem;
+  }
+  .browse-divider::before, .browse-divider::after{
+    content: "";
+    flex: 1;
+    height: 1px;
+  }
+  .browse-divider::before{ background: linear-gradient(to right, transparent, var(--gold)); }
+  .browse-divider::after{ background: linear-gradient(to left, transparent, var(--gold)); }
+
+  .spotlight{
+    display: grid;
+    grid-template-columns: minmax(200px, 300px) 1fr;
+    gap: 34px;
+    align-items: center;
+    width: 100%;
+    padding: 26px;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .spotlight:hover, .spotlight:focus-visible{
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(var(--shadow-rgb), 0.18);
+  }
+  .spotlight:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .spotlight:hover .card__play, .spotlight:focus-visible .card__play{ opacity: 1; }
+  .spotlight .card__photo{ aspect-ratio: 4 / 3; }
+  .spotlight__title{
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.95rem);
+    line-height: 1.2;
+    color: var(--maroon);
+    margin: 0 0 6px;
+  }
+  .spotlight__meta{
+    margin: 0;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+  .spotlight__caption{
+    margin: 16px 0 0;
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .spotlight__cta{
+    display: inline-block;
+    margin-top: 18px;
+    font-variant: small-caps;
+    letter-spacing: 0.06em;
+    color: var(--maroon);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+  }
+
+  .more-wrap{ text-align: center; margin-top: 28px; }
+  .more-btn{
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+    color: var(--maroon);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--gold);
+    padding: 4px 2px;
+    cursor: pointer;
+  }
+  .more-btn:hover{ color: var(--maroon-light); }
+  .more-btn:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 4px; }
+
+  @media (max-width: 640px){
+    .spotlight{ grid-template-columns: 1fr; gap: 22px; padding: 18px; }
+    .section__title.is-year{ font-size: 1.7rem; }
+    .section__sub{ white-space: normal; }
   }
 
   .card{
@@ -528,11 +704,17 @@
         <option value="person-asc">By person, A–Z</option>
       </select>
     </div>
+    <button class="surprise-btn" id="surpriseBtn" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+      Surprise memory
+    </button>
   </div>
 
   <div class="chips" id="chips"></div>
 
   <p class="status-line" id="status"></p>
+
+  <div class="home" id="home"></div>
 
   <div class="gallery" id="gallery"></div>
 
@@ -562,6 +744,7 @@
     <div class="modal__frame-wrap" id="modalFrameWrap"></div>
     <h2 class="modal__title" id="modalTitle"></h2>
     <p class="modal__caption" id="modalCaption"></p>
+    <button class="modal__again" id="modalAgain" type="button" style="display:none">Surprise me again</button>
   </div>
 </div>
 
@@ -600,6 +783,7 @@
   let activeTag = 'All';
 
   const galleryEl = document.getElementById('gallery');
+  const homeEl = document.getElementById('home');
   const chipsEl = document.getElementById('chips');
   const statusEl = document.getElementById('status');
   const emptyEl = document.getElementById('empty');
@@ -811,62 +995,273 @@
     return sorted;
   }
 
-  function renderGallery(){
+  // ---------- cards ----------
+
+  function esc(str){
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  const PLAY_ICON = `<svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>`;
+
+  function photoMarkup(v){
+    const inner = v.kind === 'audio'
+      ? `<div class="card__audio">${WAVE_SVG}<span class="card__badge">Audio recording</span></div>`
+      : `<img src="${thumbnailFor(v)}" alt="" loading="lazy">`;
+    return `<div class="card__photo">${inner}<div class="card__play">${PLAY_ICON}</div></div>`;
+  }
+
+  // If a thumbnail can't load (Drive can't make one for audio files),
+  // swap the broken-image icon for a tidy placeholder panel.
+  function attachThumbFallback(root){
+    const thumb = root.querySelector('.card__photo img');
+    if (!thumb) return;
+    thumb.addEventListener('error', () => {
+      const holder = document.createElement('div');
+      holder.innerHTML = `<div class="card__audio">${WAVE_SVG}<span class="card__badge">Tap to play</span></div>`;
+      thumb.replaceWith(holder.firstElementChild);
+    });
+  }
+
+  function metaLine(v){
+    const peopleText = v.people.length ? `With ${v.people.join(' & ')}` : '';
+    const locationText = v.location ? ` · ${v.location}` : '';
+    return `${formatDate(v.isoDate)}${peopleText ? ' · ' + peopleText : ''}${locationText}`;
+  }
+
+  function makeCard(v){
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.setAttribute('aria-label', `${v.kind === 'audio' ? 'Play recording' : 'Play'} ${v.title}`);
+    card.innerHTML = `
+      ${photoMarkup(v)}
+      <div class="card__rule"></div>
+      <p class="card__title">${esc(v.title)}</p>
+      <p class="card__meta">${esc(metaLine(v))}</p>
+    `;
+    attachThumbFallback(card);
+    card.addEventListener('click', () => openModal(v));
+    return card;
+  }
+
+  // ---------- date helpers for the highlights ----------
+
+  function yearOf(v){
+    const m = /^(\d{4})-/.exec(v.isoDate);
+    return (m && m[1] !== '0000') ? m[1] : null;
+  }
+
+  function monthDay(v){
+    const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(v.isoDate);
+    return m ? { month: +m[1], day: +m[2] } : null;
+  }
+
+  // Day number within a leap year, so every calendar date has a fixed slot.
+  function dayOfYear(month, day){
+    return Math.round((Date.UTC(2000, month - 1, day) - Date.UTC(2000, 0, 1)) / 86400000);
+  }
+
+  // Same date in past years; if nothing matches exactly, within 3 days either side.
+  function onThisDay(limit){
+    const now = new Date();
+    const today = dayOfYear(now.getMonth() + 1, now.getDate());
+    const scored = [];
+    videos.forEach(v => {
+      const md = monthDay(v);
+      if (!md || !yearOf(v)) return;
+      const diff = Math.abs(dayOfYear(md.month, md.day) - today);
+      const dist = Math.min(diff, 366 - diff);
+      if (dist <= 3) scored.push({ v, dist });
+    });
+    if (!scored.length) return null;
+    scored.sort((a, b) => a.dist - b.dist || b.v.isoDate.localeCompare(a.v.isoDate));
+    const exact = scored.some(s => s.dist === 0);
+    const items = exact ? scored.filter(s => s.dist === 0) : scored;
+    return { items: items.slice(0, limit).map(s => s.v), exact };
+  }
+
+  // One item per day: the same pick for everyone, all day, changing at midnight.
+  function spotlightPick(){
+    if (!videos.length) return null;
+    const now = new Date();
+    const seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    const mixed = (seed * 9301 + 49297) % 233280;
+    return videos[mixed % videos.length];
+  }
+
+  function mostRecent(limit){
+    return videos
+      .filter(v => yearOf(v))
+      .slice()
+      .sort((a, b) => b.isoDate.localeCompare(a.isoDate))
+      .slice(0, limit);
+  }
+
+  // ---------- home view sections ----------
+
+  const PER_YEAR = 8;
+  const expandedYears = new Set();
+
+  function sectionHead(title, sub, isYear){
+    return `<div class="section__head">
+      <h2 class="section__title${isYear ? ' is-year' : ''}">${esc(title)}</h2>
+      ${sub ? `<span class="section__sub">${esc(sub)}</span>` : ''}
+      <span class="section__rule"></span>
+    </div>`;
+  }
+
+  function cardGridSection(title, sub, items){
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    sec.innerHTML = sectionHead(title, sub, false);
+    const grid = document.createElement('div');
+    grid.className = 'cards';
+    items.forEach(v => grid.appendChild(makeCard(v)));
+    sec.appendChild(grid);
+    return sec;
+  }
+
+  function spotlightSection(v){
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    sec.innerHTML = sectionHead('Spotlight of the day', '', false);
+    const btn = document.createElement('button');
+    btn.className = 'spotlight';
+    btn.setAttribute('aria-label', `${v.kind === 'audio' ? 'Play recording' : 'Play'} ${v.title}`);
+    btn.innerHTML = `
+      ${photoMarkup(v)}
+      <div class="spotlight__body">
+        <p class="spotlight__title">${esc(v.title)}</p>
+        <p class="spotlight__meta">${esc(metaLine(v))}</p>
+        ${v.caption ? `<p class="spotlight__caption">${esc(v.caption)}</p>` : ''}
+        <span class="spotlight__cta">${v.kind === 'audio' ? 'Listen now' : 'Watch now'}</span>
+      </div>
+    `;
+    attachThumbFallback(btn);
+    btn.addEventListener('click', () => openModal(v));
+    sec.appendChild(btn);
+    return sec;
+  }
+
+  function groupByYear(){
+    const asc = sortEl.value === 'date-asc';
+    const sorted = sortVideos(videos);
+    const map = new Map();
+    const undated = [];
+    sorted.forEach(v => {
+      const y = yearOf(v);
+      if (!y){ undated.push(v); return; }
+      if (!map.has(y)) map.set(y, []);
+      map.get(y).push(v);
+    });
+    const groups = Array.from(map, ([year, items]) => ({ year, items }));
+    groups.sort((a, b) => asc ? a.year.localeCompare(b.year) : b.year.localeCompare(a.year));
+    if (undated.length) groups.push({ year: 'Undated', items: undated });
+    return groups;
+  }
+
+  function yearSection(group){
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    const count = group.items.length;
+    sec.innerHTML = sectionHead(group.year, `${count} ${count === 1 ? 'item' : 'items'}`, true);
+
+    const expanded = expandedYears.has(group.year);
+    const shown = expanded ? group.items : group.items.slice(0, PER_YEAR);
+    const grid = document.createElement('div');
+    grid.className = 'cards';
+    shown.forEach(v => grid.appendChild(makeCard(v)));
+    sec.appendChild(grid);
+
+    if (count > PER_YEAR){
+      const wrap = document.createElement('div');
+      wrap.className = 'more-wrap';
+      const btn = document.createElement('button');
+      btn.className = 'more-btn';
+      btn.textContent = expanded ? 'Show fewer' : `Show ${count - PER_YEAR} more from ${group.year}`;
+      btn.addEventListener('click', () => {
+        if (expanded) expandedYears.delete(group.year); else expandedYears.add(group.year);
+        const fresh = yearSection(group);
+        sec.replaceWith(fresh);
+        if (expanded) fresh.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      wrap.appendChild(btn);
+      sec.appendChild(wrap);
+    }
+    return sec;
+  }
+
+  function renderHome(){
+    galleryEl.style.display = 'none';
+    emptyEl.style.display = 'none';
+    homeEl.style.display = '';
+    homeEl.innerHTML = '';
+
+    const now = new Date();
+    const todayText = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+    const spot = spotlightPick();
+    if (spot) homeEl.appendChild(spotlightSection(spot));
+
+    const otd = onThisDay(4);
+    if (otd){
+      homeEl.appendChild(cardGridSection(
+        otd.exact ? 'On this day' : 'Around this time of year',
+        otd.exact ? `${todayText}, in past years` : `within a few days of ${todayText}`,
+        otd.items
+      ));
+    }
+
+    const recent = mostRecent(4);
+    if (recent.length) homeEl.appendChild(cardGridSection('Most recent', '', recent));
+
+    const groups = groupByYear();
+    if (groups.length){
+      const divider = document.createElement('div');
+      divider.className = 'browse-divider';
+      divider.textContent = 'Browse by year';
+      homeEl.appendChild(divider);
+      groups.forEach(g => homeEl.appendChild(yearSection(g)));
+    }
+
+    const yearCount = groups.filter(g => g.year !== 'Undated').length;
+    statusEl.textContent = `${videos.length} ${videos.length === 1 ? 'item' : 'items'} across ${yearCount} ${yearCount === 1 ? 'year' : 'years'}`;
+  }
+
+  // ---------- flat results view (search, tag, or person sort) ----------
+
+  function filteredVideos(){
     const tokens = queryTokens(searchEl.value);
-    let filtered = videos.filter(v => {
+    return videos.filter(v => {
       const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
       const searchOk = tokens.length === 0 || matches(v, tokens);
       return tagOk && searchOk;
     });
-    filtered = sortVideos(filtered);
+  }
+
+  function renderFlat(){
+    homeEl.style.display = 'none';
+    galleryEl.style.display = '';
+
+    const filtered = sortVideos(filteredVideos());
 
     galleryEl.innerHTML = '';
-    filtered.forEach(v => {
-      const card = document.createElement('button');
-      card.className = 'card';
-      card.setAttribute('aria-label', `Play ${v.title}`);
-      const peopleText = v.people.length ? `With ${v.people.join(' & ')}` : '';
-      const locationText = v.location ? ` · ${v.location}` : '';
-      const photoInner = v.kind === 'audio'
-        ? `<div class="card__audio">
-             <svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true">
-               <rect x="2"  y="20" width="6" height="12" rx="3"/>
-               <rect x="14" y="10" width="6" height="32" rx="3"/>
-               <rect x="26" y="2"  width="6" height="48" rx="3"/>
-               <rect x="38" y="14" width="6" height="24" rx="3"/>
-               <rect x="50" y="6"  width="6" height="40" rx="3"/>
-               <rect x="62" y="18" width="6" height="16" rx="3"/>
-             </svg>
-             <span class="card__badge">Audio recording</span>
-           </div>`
-        : `<img src="${thumbnailFor(v)}" alt="" loading="lazy">`;
-      card.innerHTML = `
-        <div class="card__photo">
-          ${photoInner}
-          <div class="card__play">
-            <svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>
-          </div>
-        </div>
-        <div class="card__rule"></div>
-        <p class="card__title">${v.title}</p>
-        <p class="card__meta">${formatDate(v.isoDate)}${peopleText ? ' · ' + peopleText : ''}${locationText}</p>
-      `;
-      // If a thumbnail can't load (Drive can't make one for audio files),
-      // swap the broken-image icon for a tidy placeholder panel.
-      const thumb = card.querySelector('.card__photo img');
-      if (thumb){
-        thumb.addEventListener('error', () => {
-          const holder = document.createElement('div');
-          holder.innerHTML = `<div class="card__audio">${WAVE_SVG}<span class="card__badge">Tap to play</span></div>`;
-          thumb.replaceWith(holder.firstElementChild);
-        });
-      }
-      card.addEventListener('click', () => openModal(v));
-      galleryEl.appendChild(card);
-    });
+    filtered.forEach(v => galleryEl.appendChild(makeCard(v)));
 
     emptyEl.style.display = filtered.length === 0 ? 'block' : 'none';
     statusEl.textContent = `Showing ${filtered.length} of ${videos.length} ${videos.length === 1 ? 'item' : 'items'}`;
+  }
+
+  // The grouped home page shows only when nothing is narrowing the list.
+  function isHomeView(){
+    return queryTokens(searchEl.value).length === 0
+      && activeTag === 'All'
+      && sortEl.value !== 'person-asc';
+  }
+
+  function renderGallery(){
+    if (isHomeView()) renderHome(); else renderFlat();
   }
 
   const modalBackdrop = document.getElementById('modalBackdrop');
@@ -874,6 +1269,8 @@
   const modalTitle = document.getElementById('modalTitle');
   const modalCaption = document.getElementById('modalCaption');
   const modalClose = document.getElementById('modalClose');
+  const modalAgain = document.getElementById('modalAgain');
+  const surpriseBtn = document.getElementById('surpriseBtn');
 
   const WAVE_SVG = `<svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true"><rect x="2" y="20" width="6" height="12" rx="3"/><rect x="14" y="10" width="6" height="32" rx="3"/><rect x="26" y="2" width="6" height="48" rx="3"/><rect x="38" y="14" width="6" height="24" rx="3"/><rect x="50" y="6" width="6" height="40" rx="3"/><rect x="62" y="18" width="6" height="16" rx="3"/></svg>`;
 
@@ -891,12 +1288,13 @@
       return `${waves}<audio controls autoplay src="${src}"></audio>`;
     }
     if (video.source === 'drive'){
-      return `<iframe src="https://drive.google.com/file/d/${video.videoId}/preview" title="${video.title}" allow="autoplay" allowfullscreen></iframe>`;
+      return `<iframe src="https://drive.google.com/file/d/${video.videoId}/preview" title="${esc(video.title)}" allow="autoplay" allowfullscreen></iframe>`;
     }
-    return `<iframe src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0" title="${video.title}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    return `<iframe src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0" title="${esc(video.title)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
   }
 
-  function openModal(video){
+  function openModal(video, opts){
+    modalAgain.style.display = (opts && opts.surprise) ? '' : 'none';
     modalFrameWrap.className = 'modal__frame-wrap' + (video.kind === 'audio' ? ' is-audio' : '');
     modalFrameWrap.innerHTML = embedFor(video);
     modalTitle.textContent = video.title;
@@ -904,6 +1302,27 @@
     modalBackdrop.dataset.open = 'true';
     modalClose.focus();
   }
+  // ---------- surprise memory ----------
+  // Picks at random from whatever you're currently looking at: the whole
+  // archive on the home page, or just the matches if a search or tag is active.
+  // Never repeats the item it just showed.
+
+  let lastSurpriseKey = null;
+  const keyOf = v => `${v.source}:${v.videoId}`;
+
+  function surprise(){
+    let pool = isHomeView() ? videos : filteredVideos();
+    if (!pool.length) pool = videos;
+    if (!pool.length) return;
+    const choices = pool.length > 1 ? pool.filter(v => keyOf(v) !== lastSurpriseKey) : pool;
+    const pick = choices[Math.floor(Math.random() * choices.length)];
+    lastSurpriseKey = keyOf(pick);
+    openModal(pick, { surprise: true });
+  }
+
+  surpriseBtn.addEventListener('click', surprise);
+  modalAgain.addEventListener('click', surprise);
+
   function closeModal(){
     modalBackdrop.dataset.open = 'false';
     modalFrameWrap.innerHTML = '';
