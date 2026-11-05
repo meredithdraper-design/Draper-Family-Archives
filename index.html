@@ -334,6 +334,7 @@
     background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
   }
   .chip--more{ font-style: italic; font-variant: normal; letter-spacing: 0; }
+  .chip--dim{ opacity: 0.4; }
 
   /* ---------- favorite badge ---------- */
 
@@ -843,7 +844,7 @@
   let videos = [];
   let allTags = ['All'];
   let activeTag = 'All';
-  let activePerson = null;   // lowercase name key, or null for everyone
+  const activePeople = new Set();   // lowercase names selected in "Browse by person"
 
   const galleryEl = document.getElementById('gallery');
   const homeEl = document.getElementById('home');
@@ -1007,7 +1008,8 @@
     allTags = ['All', ...uniqueTags];
     // If a refresh removed the tag or person being viewed, fall back to everything.
     if (!allTags.includes(activeTag)) activeTag = 'All';
-    if (activePerson && !peopleList().some(p => p.key === activePerson)) activePerson = null;
+    const knownPeople = new Set(peopleList().map(p => p.key));
+    Array.from(activePeople).forEach(k => { if (!knownPeople.has(k)) activePeople.delete(k); });
     renderChips();
     renderPeople();
     renderGallery();
@@ -1022,7 +1024,7 @@
       btn.className = 'chip';
       btn.textContent = tag;
       btn.dataset.active = (tag === activeTag).toString();
-      btn.addEventListener('click', () => { activeTag = tag; renderChips(); renderGallery(); });
+      btn.addEventListener('click', () => { activeTag = tag; renderChips(); renderPeople(); renderGallery(); });
       chipsEl.appendChild(btn);
     });
   }
@@ -1263,6 +1265,7 @@
   function setTag(tag){
     activeTag = tag;
     renderChips();
+    renderPeople();
     renderGallery();
     document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1449,30 +1452,42 @@
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
         .slice(0, PEOPLE_COLLAPSED);
       const keep = new Set(top.map(p => p.key));
-      if (activePerson) keep.add(activePerson);
+      activePeople.forEach(k => keep.add(k));
       shown = all.filter(p => keep.has(p.key));
     }
 
     const label = document.createElement('span');
     label.className = 'people__label';
-    label.textContent = 'Browse by person';
+    label.textContent = activePeople.size > 1 ? 'Browse by person (together)' : 'Browse by person';
     peopleEl.appendChild(label);
 
     const everyone = document.createElement('button');
     everyone.className = 'chip';
     everyone.textContent = 'Everyone';
-    everyone.dataset.active = (!activePerson).toString();
-    everyone.addEventListener('click', () => { activePerson = null; renderPeople(); renderGallery(); });
+    everyone.dataset.active = (activePeople.size === 0).toString();
+    everyone.addEventListener('click', () => { activePeople.clear(); renderPeople(); renderGallery(); });
     peopleEl.appendChild(everyone);
 
     shown.forEach(p => {
+      const selected = activePeople.has(p.key);
+      // How many results there would be if this person were added to the selection.
+      const together = selected ? null : filteredVideos(p.key).length;
       const btn = document.createElement('button');
-      btn.className = 'chip chip--person';
-      btn.dataset.active = (p.key === activePerson).toString();
-      btn.title = `${p.count} ${p.count === 1 ? 'item' : 'items'}`;
+      btn.className = 'chip chip--person' + (!selected && together === 0 ? ' chip--dim' : '');
+      btn.dataset.active = selected.toString();
+      btn.setAttribute('aria-pressed', selected.toString());
+      if (selected){
+        btn.title = 'Click to remove from the selection';
+      } else if (activePeople.size > 0 || activeTag !== 'All' || queryTokens(searchEl.value).length){
+        btn.title = together === 0
+          ? 'No matching items with this person'
+          : `${together} ${together === 1 ? 'item' : 'items'} if added`;
+      } else {
+        btn.title = `${p.count} ${p.count === 1 ? 'item' : 'items'}`;
+      }
       btn.innerHTML = `<span class="chip__initial">${esc(Array.from(p.name)[0].toUpperCase())}</span>${esc(p.name)}`;
       btn.addEventListener('click', () => {
-        activePerson = (activePerson === p.key) ? null : p.key;
+        if (activePeople.has(p.key)) activePeople.delete(p.key); else activePeople.add(p.key);
         renderPeople();
         renderGallery();
       });
@@ -1490,11 +1505,16 @@
 
   // ---------- flat results view (search, tag, or person sort) ----------
 
-  function filteredVideos(){
+  // Everything matching the current search, tag, and selected people.
+  // Selecting several people narrows the list: a video must include all of them.
+  // `extraPerson` lets the people row ask "what if this person were added too?"
+  function filteredVideos(extraPerson){
     const tokens = queryTokens(searchEl.value);
     return videos.filter(v => {
       const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
-      const personOk = !activePerson || v.people.some(n => n.toLowerCase() === activePerson);
+      const keys = v.people.map(n => n.toLowerCase());
+      const personOk = Array.from(activePeople).every(k => keys.includes(k))
+        && (!extraPerson || keys.includes(extraPerson));
       const searchOk = tokens.length === 0 || matches(v, tokens);
       return tagOk && personOk && searchOk;
     });
@@ -1517,7 +1537,7 @@
   function isHomeView(){
     return queryTokens(searchEl.value).length === 0
       && activeTag === 'All'
-      && !activePerson
+      && activePeople.size === 0
       && sortEl.value !== 'person-asc';
   }
 
@@ -1592,7 +1612,7 @@
   modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-  searchEl.addEventListener('input', renderGallery);
+  searchEl.addEventListener('input', () => { renderPeople(); renderGallery(); });
   sortEl.addEventListener('change', renderGallery);
 
   loadingEl.style.display = 'block';
