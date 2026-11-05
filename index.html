@@ -363,6 +363,247 @@
     box-shadow: 0 2px 7px rgba(var(--shadow-rgb), 0.28);
   }
 
+  /* ---------- Browse by bar, panels, and active-filter pills ---------- */
+
+  .browse{
+    max-width: 900px;
+    margin: 18px auto 0;
+    padding: 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 22px;
+  }
+  .browse__label{ font-style: italic; color: var(--ink-soft); font-size: 0.92rem; }
+  .browse__btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1.04rem;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 3px 1px;
+    cursor: pointer;
+  }
+  .browse__btn:hover{ color: var(--ink); }
+  .browse__btn:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .browse__btn.has-selection{ color: var(--maroon); }
+  .browse__btn[aria-expanded="true"]{ color: var(--maroon); border-bottom-color: var(--gold); }
+  .browse__count{
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-variant: normal;
+    letter-spacing: 0;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+  }
+  .browse__chev{
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+  .browse__btn[aria-expanded="true"] .browse__chev{ transform: translateY(1px) rotate(225deg); }
+
+  .slideshow-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1.02rem;
+    color: var(--maroon);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 4px 15px;
+    cursor: pointer;
+  }
+  .slideshow-btn:hover{ background: #fff; }
+  .slideshow-btn:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+
+  .browse-panel{
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+    width: calc(100% - 48px);
+    max-width: 840px;
+    margin: 14px auto 0;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.62);
+    border: 1px solid var(--line);
+  }
+  .browse-panel.is-open{ display: flex; }
+  .chip__count{
+    margin-left: 6px;
+    font-style: italic;
+    font-variant: normal;
+    letter-spacing: 0;
+    font-size: 0.8rem;
+    opacity: 0.75;
+  }
+
+  .active-filters{
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 10px;
+    max-width: 900px;
+    margin: 14px auto 0;
+    padding: 0 28px;
+  }
+  .active-filters.has-items{ display: flex; }
+  .pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.9rem;
+    color: var(--maroon);
+    background: rgba(255,255,255,0.88);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 3px 5px 3px 12px;
+    cursor: pointer;
+  }
+  .pill:hover{ background: #fff; }
+  .pill:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 2px; }
+  .pill__kind{ font-style: italic; color: var(--ink-soft); }
+  .pill__x{
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--ink-soft);
+    background: var(--line);
+  }
+  .mode{
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+    margin: 0 6px;
+  }
+  .clear-btn{
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .clear-btn:hover{ color: var(--maroon); }
+
+  /* ---------- year jump bar (home view only) ---------- */
+
+  .yearbar{
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin-top: 18px;
+    padding: 10px 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 22px;
+    background: rgba(246,248,251,0.93);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .yearbar.is-visible{ display: flex; }
+  .yearbar__lead{ font-style: italic; color: var(--ink-soft); font-size: 0.9rem; }
+  .yearbar__link{
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .yearbar__link:hover{ color: var(--ink); }
+  .yearbar__link:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .yearbar__link[data-active="true"]{ color: var(--maroon); border-bottom-color: var(--gold); }
+  .section[data-year]{ scroll-margin-top: 72px; }
+
+  @media (max-width: 640px){
+    .yearbar{ flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
+    .yearbar__link, .yearbar__lead{ flex: 0 0 auto; }
+  }
+
+  /* ---------- collection cards look like a small stack ---------- */
+
+  .card--collection .card__photo{
+    box-shadow:
+      0 0 0 4px var(--panel), 0 0 0 5px var(--line),
+      7px 7px 0 -1px var(--panel), 7px 7px 0 0 var(--line),
+      13px 13px 0 -2px var(--panel), 13px 13px 0 -1px var(--line);
+  }
+
+  /* ---------- slideshow controls in the player ---------- */
+
+  .modal__meta{
+    margin: 0 4px 8px;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+  .modal__nav{
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 18px 4px 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .modal__navbtn{
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+    color: var(--maroon);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--gold);
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .modal__navbtn:hover{ color: var(--maroon-light); }
+  .modal__navbtn:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .modal__navbtn[data-active="true"]{ background: var(--maroon); color: #fff; border-bottom-color: var(--maroon); padding: 2px 10px; border-radius: 999px; }
+  .modal__count{ font-style: italic; color: var(--ink-soft); font-size: 0.92rem; }
+
   /* ---------- status ---------- */
 
   .status-line{
@@ -781,10 +1022,13 @@
     </button>
   </div>
 
-  <div class="chips" id="chips"></div>
-  <div class="people" id="people"></div>
+  <div class="browse" id="browse"></div>
+  <div class="browse-panel" id="browsePanel"></div>
+  <div class="active-filters" id="activeFilters"></div>
 
   <p class="status-line" id="status"></p>
+
+  <nav class="yearbar" id="yearbar" aria-label="Jump to a year"></nav>
 
   <div class="home" id="home"></div>
 
@@ -797,7 +1041,7 @@
 
   <div class="notice" id="empty">
     <h2>Nothing here yet</h2>
-    <p>Try a different search, or pick another tag above.</p>
+    <p>Try a different search, or clear one of the filters above.</p>
   </div>
 
   <div class="notice" id="errorNotice">
@@ -815,7 +1059,14 @@
     <button class="modal__close" id="modalClose" aria-label="Close video">✕</button>
     <div class="modal__frame-wrap" id="modalFrameWrap"></div>
     <h2 class="modal__title" id="modalTitle"></h2>
+    <p class="modal__meta" id="modalMeta"></p>
     <p class="modal__caption" id="modalCaption"></p>
+    <div class="modal__nav" id="modalNav" style="display:none">
+      <button type="button" class="modal__navbtn" id="slidePrev">&lsaquo; Previous</button>
+      <span class="modal__count" id="slideCount"></span>
+      <button type="button" class="modal__navbtn" id="slideNext">Next &rsaquo;</button>
+      <button type="button" class="modal__navbtn" id="slideShuffle" aria-pressed="false">Shuffle</button>
+    </div>
     <button class="modal__again" id="modalAgain" type="button" style="display:none">Surprise me again</button>
   </div>
 </div>
@@ -850,16 +1101,36 @@
       caption: "A very ordinary, very good morning." }
   ];
 
+  // ---------- birthdays, used to work out ages from each item's date ----------
+  // Names must match the People column (capitalization doesn't matter).
+  // Use YYYY-MM-DD. If you only know the month, use the 1st. To add someone,
+  // add another line in the same format.
+  const BIRTHDAYS = {
+    "Savannah": "2020-05-01",
+    "Penelope": "2022-05-01"
+  };
+
+  const lc = s => String(s).toLowerCase();
+  const BIRTH = Object.entries(BIRTHDAYS).map(([name, iso]) => ({ name, key: lc(name), iso }));
+
   let videos = [];
   let allTags = ['All'];
   let activeTag = 'All';
-  const activePeople = new Set();   // lowercase names selected in "Browse by person"
-  let peopleMode = 'all';           // 'all' = must include everyone selected, 'any' = at least one of them
+  const activePeople = new Set();   // lowercase names selected under Browse by > People
+  let peopleMode = 'all';           // 'all' = must include everyone selected, 'any' = at least one
+  const activePlaces = new Set();   // lowercase places selected under Browse by > Places
+  let placesMode = 'all';
+  let activeCollection = null;      // lowercase collection name, or null
+  let sortBeforeCollection = null;  // sort setting to restore when a collection is closed
+  let openPanel = null;             // which Browse by panel is open
+  let slideshow = null;             // { list, original, index, shuffled } while a slideshow runs
 
   const galleryEl = document.getElementById('gallery');
   const homeEl = document.getElementById('home');
-  const peopleEl = document.getElementById('people');
-  const chipsEl = document.getElementById('chips');
+  const browseEl = document.getElementById('browse');
+  const panelEl = document.getElementById('browsePanel');
+  const activeFiltersEl = document.getElementById('activeFilters');
+  const yearbarEl = document.getElementById('yearbar');
   const statusEl = document.getElementById('status');
   const emptyEl = document.getElementById('empty');
   const loadingEl = document.getElementById('loading');
@@ -933,10 +1204,21 @@
           people: splitPeople(pick(row, ["People", "people"])),
           tags: splitList(pick(row, ["Tags", "tags"])),
           caption: String(pick(row, ["Comments/Description", "Caption", "caption", "Description"])).trim(),
-          location: String(pick(row, ["Location", "location"])).trim()
+          location: String(pick(row, ["Location", "location"])).trim(),
+          collections: splitList(pick(row, ["Collection", "Collections", "collection"]))
         };
       })
       .filter(Boolean);
+  }
+
+  // Fills in fields worked out from the others: places come from the Location
+  // column, and the sample data may not list collections.
+  function withDerived(list){
+    list.forEach(v => {
+      if (!v.places) v.places = splitList(v.location);
+      if (!v.collections) v.collections = [];
+    });
+    return list;
   }
 
   // ---------- saved copy, so repeat visits open instantly ----------
@@ -944,7 +1226,7 @@
   // shows it right away, then checks for updates in the background and only
   // redraws if something actually changed.
 
-  const CACHE_KEY = 'draperArchive.videos.v1';
+  const CACHE_KEY = 'draperArchive.videos.v2';
 
   function readCache(){
     try {
@@ -983,7 +1265,7 @@
       })
       .then(data => {
         if (data && data.error) throw new Error(data.error);
-        const parsed = rowsToVideos(data);
+        const parsed = withDerived(rowsToVideos(data));
         if (!parsed.length){
           if (!cached){
             videos = SAMPLE_VIDEOS;
@@ -1013,31 +1295,18 @@
 
   function finishLoading(){
     loadingEl.style.display = 'none';
+    videos = withDerived(videos);
     const uniqueTags = Array.from(new Set(videos.flatMap(v => v.tags)));
     uniqueTags.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }));
     allTags = ['All', ...uniqueTags];
-    // If a refresh removed the tag or person being viewed, fall back to everything.
+    // If a refresh removed something being viewed, fall back to everything.
     if (!allTags.includes(activeTag)) activeTag = 'All';
-    const knownPeople = new Set(peopleList().map(p => p.key));
-    Array.from(activePeople).forEach(k => { if (!knownPeople.has(k)) activePeople.delete(k); });
-    renderChips();
-    renderPeople();
+    pruneSelections();
+    renderBrowse();
     renderGallery();
   }
 
   // ---------- rendering ----------
-
-  function renderChips(){
-    chipsEl.innerHTML = '';
-    allTags.forEach(tag => {
-      const btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.textContent = tag;
-      btn.dataset.active = (tag === activeTag).toString();
-      btn.addEventListener('click', () => { activeTag = tag; renderChips(); renderPeople(); renderGallery(); });
-      chipsEl.appendChild(btn);
-    });
-  }
 
   function formatDate(iso){
     const d = new Date(iso + "T00:00:00");
@@ -1094,7 +1363,7 @@
     if (searchCache.has(video)) return searchCache.get(video);
     const parts = [
       video.title, video.caption, video.location,
-      ...video.tags, ...video.people,
+      ...video.tags, ...video.people, ...(video.collections || []),
       dateWords(video.isoDate),
       video.kind === 'audio' ? 'audio recording' : 'video'
     ];
@@ -1105,8 +1374,80 @@
     return idx;
   }
 
+  // ---------- ages ----------
+  // An item's date and each person's birthday give their age at the time.
+  // Under 2 years it's shown in months; after that, in years.
+
+  const agesCache = new WeakMap();
+
+  function monthsBetween(birthIso, iso){
+    const b = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthIso);
+    const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    if (!b || !d || d[1] === '0000') return null;
+    let months = (+d[1] - +b[1]) * 12 + (+d[2] - +b[2]);
+    if (+d[3] < +b[3]) months -= 1;
+    return months;
+  }
+
+  function ageLabel(months){
+    if (months < 1) return 'newborn';
+    if (months < 24) return `${months} ${months === 1 ? 'month' : 'months'}`;
+    return `age ${Math.floor(months / 12)}`;
+  }
+
+  function agesFor(v){
+    if (agesCache.has(v)) return agesCache.get(v);
+    const out = [];
+    v.people.forEach(name => {
+      const b = BIRTH.find(x => x.key === lc(name));
+      if (!b) return;
+      const months = monthsBetween(b.iso, v.isoDate);
+      if (months === null || months < 0) return;   // before they were born
+      out.push({ name, key: b.key, months, label: ageLabel(months) });
+    });
+    agesCache.set(v, out);
+    return out;
+  }
+
+  // Pulls an age phrase ("age 3", "3 years old", "8 months old", "newborn")
+  // out of what was typed; whatever is left is searched as normal words.
+  function parseAge(raw){
+    const text = String(raw || '');
+    const tries = [
+      { re: /\bage[sd]?\s*(\d{1,2})\b/i, unit: 'years' },
+      { re: /\b(\d{1,2})\s*(?:years?|yrs?|yr|yo|y\/o)(?:\s*old)?\b/i, unit: 'years' },
+      { re: /\b(\d{1,2})\s*months?(?:\s*old)?\b/i, unit: 'months' }
+    ];
+    for (const t of tries){
+      const m = t.re.exec(text);
+      if (m) return { age: { unit: t.unit, n: +m[1] }, rest: text.replace(m[0], ' ') };
+    }
+    const nb = /\bnewborn\b/i.exec(text);
+    if (nb) return { age: { unit: 'months', n: 0 }, rest: text.replace(nb[0], ' ') };
+    return { age: null, rest: text };
+  }
+
+  function parseSearch(raw){
+    const { age, rest } = parseAge(raw);
+    return { age, tokens: normalizeText(rest).split(' ').filter(Boolean) };
+  }
+
   function queryTokens(raw){
-    return normalizeText(raw).split(' ').filter(Boolean);
+    return parseSearch(raw).tokens;
+  }
+
+  function searchActive(){
+    const s = parseSearch(searchEl.value);
+    return s.tokens.length > 0 || !!s.age;
+  }
+
+  // If a child's name is also typed ("Savannah age 3"), only that child's age counts.
+  function matchesAge(v, spec, tokens){
+    let infos = agesFor(v);
+    if (!infos.length) return false;
+    const named = infos.filter(i => tokens.includes(normalizeText(i.name)));
+    if (named.length) infos = named;
+    return infos.some(i => spec.unit === 'years' ? Math.floor(i.months / 12) === spec.n : i.months === spec.n);
   }
 
   function matches(video, tokens){
@@ -1163,7 +1504,12 @@
   }
 
   function metaLine(v){
-    const peopleText = v.people.length ? `With ${v.people.join(' & ')}` : '';
+    const ages = agesFor(v);
+    const names = v.people.map(n => {
+      const a = ages.find(x => x.key === lc(n));
+      return a ? `${n} (${a.label})` : n;
+    });
+    const peopleText = names.length ? `With ${names.join(' & ')}` : '';
     const locationText = v.location ? ` · ${v.location}` : '';
     return `${formatDate(v.isoDate)}${peopleText ? ' · ' + peopleText : ''}${locationText}`;
   }
@@ -1228,14 +1574,6 @@
     return videos[mixed % videos.length];
   }
 
-  function mostRecent(limit){
-    return videos
-      .filter(v => yearOf(v))
-      .slice()
-      .sort((a, b) => b.isoDate.localeCompare(a.isoDate))
-      .slice(0, limit);
-  }
-
   // ---------- favorites ----------
 
   function todaySeed(){
@@ -1272,12 +1610,16 @@
     return allTags.find(t => FAVORITE_RE.test(t.trim()));
   }
 
+  function scrollToToolbar(){
+    document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function setTag(tag){
     activeTag = tag;
-    renderChips();
-    renderPeople();
+    openPanel = null;
+    renderBrowse();
     renderGallery();
-    document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToToolbar();
   }
 
   // ---------- home view sections ----------
@@ -1346,6 +1688,8 @@
   function yearSection(group){
     const sec = document.createElement('section');
     sec.className = 'section';
+    sec.id = 'year-' + group.year;
+    sec.dataset.year = group.year;
     const count = group.items.length;
     sec.innerHTML = sectionHead(group.year, `${count} ${count === 1 ? 'item' : 'items'}`, true);
 
@@ -1366,6 +1710,7 @@
         if (expanded) expandedYears.delete(group.year); else expandedYears.add(group.year);
         const fresh = yearSection(group);
         sec.replaceWith(fresh);
+        if (yearObserver) yearObserver.observe(fresh);
         if (expanded) fresh.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       wrap.appendChild(btn);
@@ -1412,8 +1757,8 @@
       homeEl.appendChild(favSec);
     }
 
-    const recent = mostRecent(4);
-    if (recent.length) homeEl.appendChild(cardGridSection('Most recent', '', recent));
+    const cols = collectionsList();
+    if (cols.length) homeEl.appendChild(collectionsSection(cols));
 
     const groups = groupByYear();
     if (groups.length){
@@ -1424,21 +1769,26 @@
       groups.forEach(g => homeEl.appendChild(yearSection(g)));
     }
 
+    renderYearbar(groups);
     const yearCount = groups.filter(g => g.year !== 'Undated').length;
     statusEl.textContent = `${videos.length} ${videos.length === 1 ? 'item' : 'items'} across ${yearCount} ${yearCount === 1 ? 'year' : 'years'}`;
   }
 
-  // ---------- browse by person ----------
+  // ---------- "Browse by" bar, panels, and active-filter pills ----------
+  // Tags, people, places, and collections sit behind compact buttons. Whatever
+  // is selected shows as a small removable pill, so nothing hides what is
+  // narrowing the list.
 
-  const PEOPLE_COLLAPSED = 10;
-  let peopleExpanded = false;
+  const PANEL_LIMIT = 10;
+  const expandedFacets = new Set();   // long lists the visitor has expanded
+  const FACET_LABELS = { tags: 'Tags', people: 'People', places: 'Places', collections: 'Collections' };
 
-  function peopleList(){
+  function facetList(getter){
     const map = new Map();
     videos.forEach(v => {
       const seen = new Set();
-      v.people.forEach(name => {
-        const key = name.toLowerCase();
+      getter(v).forEach(name => {
+        const key = lc(name);
         if (seen.has(key)) return;
         seen.add(key);
         if (!map.has(key)) map.set(key, { key, name, count: 0 });
@@ -1447,123 +1797,393 @@
     });
     return Array.from(map.values());
   }
+  const peopleList = () => facetList(v => v.people);
+  const placesList = () => facetList(v => v.places);
+  const collectionsList = () => facetList(v => v.collections);
+  const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true });
+  const nameFor = (list, key) => { const hit = list.find(x => x.key === key); return hit ? hit.name : key; };
 
-  function renderPeople(){
-    const all = peopleList().sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-    peopleEl.innerHTML = '';
-    if (all.length < 2){ peopleEl.style.display = 'none'; return; }
-    peopleEl.style.display = '';
+  function pruneSelections(){
+    const people = new Set(peopleList().map(x => x.key));
+    Array.from(activePeople).forEach(k => { if (!people.has(k)) activePeople.delete(k); });
+    const places = new Set(placesList().map(x => x.key));
+    Array.from(activePlaces).forEach(k => { if (!places.has(k)) activePlaces.delete(k); });
+    if (activeCollection && !collectionsList().some(c => c.key === activeCollection)) dropCollection();
+  }
 
-    // With a long list, start with the most-featured people; the rest are one click away.
-    let shown = all;
-    const collapsible = all.length > PEOPLE_COLLAPSED;
-    if (collapsible && !peopleExpanded){
-      const top = all.slice()
-        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-        .slice(0, PEOPLE_COLLAPSED);
-      const keep = new Set(top.map(p => p.key));
-      activePeople.forEach(k => keep.add(k));
-      shown = all.filter(p => keep.has(p.key));
+  function availableFacets(){
+    const out = [];
+    if (allTags.length > 1) out.push('tags');
+    if (peopleList().length > 1) out.push('people');
+    if (placesList().length > 1) out.push('places');
+    if (collectionsList().length > 0) out.push('collections');
+    return out;
+  }
+
+  function facetSelectionCount(id){
+    if (id === 'tags') return activeTag !== 'All' ? 1 : 0;
+    if (id === 'people') return activePeople.size;
+    if (id === 'places') return activePlaces.size;
+    return activeCollection ? 1 : 0;
+  }
+
+  function anyFilterActive(){
+    return activeTag !== 'All' || !!activeCollection || activePeople.size > 0
+      || activePlaces.size > 0 || searchActive();
+  }
+
+  function dropCollection(){
+    if (activeCollection && sortBeforeCollection !== null && sortEl.value === 'date-asc'){
+      sortEl.value = sortBeforeCollection;
+    }
+    sortBeforeCollection = null;
+    activeCollection = null;
+  }
+
+  // A collection reads like a story, so opening one switches to oldest first
+  // (and puts your previous sort back when you close it).
+  function selectCollection(key){
+    if (!key || key === activeCollection){
+      dropCollection();
+    } else {
+      if (!activeCollection) sortBeforeCollection = sortEl.value;
+      activeCollection = key;
+      sortEl.value = 'date-asc';
+    }
+    openPanel = null;
+    renderBrowse();
+    renderGallery();
+  }
+
+  function clearAllFilters(){
+    activeTag = 'All';
+    activePeople.clear();
+    activePlaces.clear();
+    dropCollection();
+    renderBrowse();
+    renderGallery();
+  }
+
+  function renderBrowse(){
+    const facets = availableFacets();
+    if (openPanel && !facets.includes(openPanel)) openPanel = null;
+    browseEl.innerHTML = '';
+
+    if (facets.length){
+      const label = document.createElement('span');
+      label.className = 'browse__label';
+      label.textContent = 'Browse by';
+      browseEl.appendChild(label);
+      facets.forEach(id => {
+        const n = facetSelectionCount(id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'browse__btn' + (n ? ' has-selection' : '');
+        btn.setAttribute('aria-expanded', String(openPanel === id));
+        btn.innerHTML = `${esc(FACET_LABELS[id])}${n ? `<span class="browse__count">${n}</span>` : ''}<span class="browse__chev" aria-hidden="true"></span>`;
+        btn.addEventListener('click', () => { openPanel = (openPanel === id) ? null : id; renderBrowse(); });
+        browseEl.appendChild(btn);
+      });
     }
 
-    const label = document.createElement('span');
-    label.className = 'people__label';
-    label.textContent = 'Browse by person';
-    peopleEl.appendChild(label);
+    const show = document.createElement('button');
+    show.type = 'button';
+    show.className = 'slideshow-btn';
+    show.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Slideshow`;
+    show.addEventListener('click', startSlideshow);
+    browseEl.appendChild(show);
 
-    const everyone = document.createElement('button');
-    everyone.className = 'chip';
-    everyone.textContent = 'Everyone';
-    everyone.dataset.active = (activePeople.size === 0).toString();
-    everyone.addEventListener('click', () => { activePeople.clear(); renderPeople(); renderGallery(); });
-    peopleEl.appendChild(everyone);
+    renderPanel();
+    renderActiveFilters();
+  }
 
-    const currentCount = filteredVideos().length;
-    const narrowing = activePeople.size > 0 || activeTag !== 'All' || queryTokens(searchEl.value).length > 0;
-    const anyMode = peopleMode === 'any' && activePeople.size > 0;
+  function makeChip(text, active, onClick, extraClass){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip' + (extraClass ? ' ' + extraClass : '');
+    btn.dataset.active = String(active);
+    btn.setAttribute('aria-pressed', String(active));
+    btn.textContent = text;
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
 
-    shown.forEach(p => {
-      const selected = activePeople.has(p.key);
-      // "All" mode: how many results remain if this person is added.
-      // "Any" mode: how many extra results this person would bring in.
-      const withPerson = selected ? 0 : filteredVideos(p.key).length;
-      const together = anyMode ? withPerson - currentCount : withPerson;
-      const btn = document.createElement('button');
-      btn.className = 'chip chip--person' + (!selected && together === 0 ? ' chip--dim' : '');
-      btn.dataset.active = selected.toString();
-      btn.setAttribute('aria-pressed', selected.toString());
-      if (selected){
-        btn.title = 'Click to remove from the selection';
-      } else if (narrowing){
-        btn.title = together === 0
-          ? (anyMode ? 'Nothing new to add' : 'No matching items with this person')
-          : (anyMode
-              ? `Adds ${together} more ${together === 1 ? 'item' : 'items'}`
-              : `${together} ${together === 1 ? 'item' : 'items'} if added`);
-      } else {
-        btn.title = `${p.count} ${p.count === 1 ? 'item' : 'items'}`;
-      }
-      btn.innerHTML = `<span class="chip__initial">${esc(Array.from(p.name)[0].toUpperCase())}</span>${esc(p.name)}`;
-      btn.addEventListener('click', () => {
-        if (activePeople.has(p.key)) activePeople.delete(p.key); else activePeople.add(p.key);
-        renderPeople();
-        renderGallery();
+  function renderPanel(){
+    panelEl.innerHTML = '';
+    if (!openPanel){ panelEl.classList.remove('is-open'); return; }
+    panelEl.classList.add('is-open');
+
+    if (openPanel === 'tags'){
+      allTags.filter(t => t !== 'All').forEach(tag => {
+        panelEl.appendChild(makeChip(tag, tag === activeTag, () => {
+          activeTag = (activeTag === tag) ? 'All' : tag;
+          openPanel = null;
+          renderBrowse();
+          renderGallery();
+        }));
       });
-      peopleEl.appendChild(btn);
-    });
-
-    if (collapsible){
-      const more = document.createElement('button');
-      more.className = 'chip chip--more';
-      more.textContent = peopleExpanded ? 'Show fewer' : `Show all ${all.length}`;
-      more.addEventListener('click', () => { peopleExpanded = !peopleExpanded; renderPeople(); });
-      peopleEl.appendChild(more);
-    }
-
-    // Only meaningful once two or more people are selected.
-    if (activePeople.size >= 2){
-      const mode = document.createElement('div');
-      mode.className = 'people__mode';
-      mode.setAttribute('role', 'group');
-      mode.setAttribute('aria-label', 'How to combine the selected people');
-      const lead = document.createElement('span');
-      lead.className = 'people__label';
-      lead.textContent = 'Show items with';
-      mode.appendChild(lead);
-      [['all', 'All of them together'], ['any', 'Any of them']].forEach(([value, text]) => {
-        const b = document.createElement('button');
-        b.className = 'chip';
-        b.textContent = text;
-        b.dataset.active = (peopleMode === value).toString();
-        b.setAttribute('aria-pressed', (peopleMode === value).toString());
-        b.addEventListener('click', () => { peopleMode = value; renderPeople(); renderGallery(); });
-        mode.appendChild(b);
+    } else if (openPanel === 'collections'){
+      collectionsList().sort(byName).forEach(c => {
+        const chip = makeChip('', c.key === activeCollection, () => selectCollection(c.key));
+        chip.innerHTML = `${esc(c.name)}<span class="chip__count">${c.count}</span>`;
+        panelEl.appendChild(chip);
       });
-      peopleEl.appendChild(mode);
+    } else if (openPanel === 'people'){
+      buildMultiPanel('people', peopleList(), activePeople, () => peopleMode, 'person', true);
+    } else if (openPanel === 'places'){
+      buildMultiPanel('places', placesList(), activePlaces, () => placesMode, 'place', false);
     }
   }
 
-  // ---------- flat results view (search, tag, or person sort) ----------
+  // People and places can be combined. Names that wouldn't match anything if
+  // added are faded, and the hover text says how many items to expect.
+  function buildMultiPanel(id, list, selected, getMode, extraKey, withInitial){
+    const sorted = list.slice().sort(byName);
+    let shown = sorted;
+    const collapsible = sorted.length > PANEL_LIMIT;
+    if (collapsible && !expandedFacets.has(id)){
+      const top = sorted.slice()
+        .sort((a, b) => b.count - a.count || byName(a, b))
+        .slice(0, PANEL_LIMIT);
+      const keep = new Set(top.map(x => x.key));
+      selected.forEach(k => keep.add(k));
+      shown = sorted.filter(x => keep.has(x.key));
+    }
 
-  // Everything matching the current search, tag, and selected people.
-  // With several people selected, "all" mode keeps videos that include every one
-  // of them; "any" mode keeps videos that include at least one.
-  // `extraPerson` lets the people row ask "what if this person were added too?"
-  function filteredVideos(extraPerson){
-    const tokens = queryTokens(searchEl.value);
+    const currentCount = filteredVideos().length;
+    const narrowing = anyFilterActive();
+    const anyMode = getMode() === 'any' && selected.size > 0;
+
+    shown.forEach(item => {
+      const isSel = selected.has(item.key);
+      const withItem = isSel ? 0 : filteredVideos({ [extraKey]: item.key }).length;
+      const together = anyMode ? withItem - currentCount : withItem;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip' + (withInitial ? ' chip--person' : '') + (!isSel && together === 0 ? ' chip--dim' : '');
+      btn.dataset.active = String(isSel);
+      btn.setAttribute('aria-pressed', String(isSel));
+      if (isSel){
+        btn.title = 'Click to remove from the selection';
+      } else if (narrowing){
+        btn.title = together === 0
+          ? (anyMode ? 'Nothing new to add' : 'No matching items')
+          : (anyMode ? `Adds ${together} more ${together === 1 ? 'item' : 'items'}`
+                     : `${together} ${together === 1 ? 'item' : 'items'} if added`);
+      } else {
+        btn.title = `${item.count} ${item.count === 1 ? 'item' : 'items'}`;
+      }
+      btn.innerHTML = withInitial
+        ? `<span class="chip__initial">${esc(Array.from(item.name)[0].toUpperCase())}</span>${esc(item.name)}`
+        : esc(item.name);
+      btn.addEventListener('click', () => {
+        if (selected.has(item.key)) selected.delete(item.key); else selected.add(item.key);
+        renderBrowse();
+        renderGallery();
+      });
+      panelEl.appendChild(btn);
+    });
+
+    if (collapsible){
+      const open = expandedFacets.has(id);
+      const more = makeChip(open ? 'Show fewer' : `Show all ${sorted.length}`, false, () => {
+        if (open) expandedFacets.delete(id); else expandedFacets.add(id);
+        renderPanel();
+      }, 'chip--more');
+      panelEl.appendChild(more);
+    }
+  }
+
+  function pill(kind, text, onRemove){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill';
+    b.setAttribute('aria-label', `Remove ${kind} ${text}`);
+    b.innerHTML = `<span class="pill__kind">${esc(kind)}:</span><span>${esc(text)}</span><span class="pill__x" aria-hidden="true">×</span>`;
+    b.addEventListener('click', onRemove);
+    return b;
+  }
+
+  function modeGroup(getMode, setMode){
+    const wrap = document.createElement('span');
+    wrap.className = 'mode';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'How to combine the selected items');
+    const lead = document.createElement('span');
+    lead.className = 'people__label';
+    lead.textContent = 'show items with';
+    wrap.appendChild(lead);
+    [['all', 'All of them together'], ['any', 'Any of them']].forEach(([value, text]) => {
+      wrap.appendChild(makeChip(text, getMode() === value, () => {
+        setMode(value);
+        renderBrowse();
+        renderGallery();
+      }));
+    });
+    return wrap;
+  }
+
+  function renderActiveFilters(){
+    activeFiltersEl.innerHTML = '';
+    const people = peopleList(), places = placesList(), collections = collectionsList();
+    let count = 0;
+    const add = el => { activeFiltersEl.appendChild(el); count++; };
+
+    if (activeTag !== 'All'){
+      add(pill('Tag', activeTag, () => { activeTag = 'All'; renderBrowse(); renderGallery(); }));
+    }
+    if (activeCollection){
+      add(pill('Collection', nameFor(collections, activeCollection), () => selectCollection(null)));
+    }
+    Array.from(activePeople).forEach(key => {
+      add(pill('Person', nameFor(people, key), () => { activePeople.delete(key); renderBrowse(); renderGallery(); }));
+    });
+    if (activePeople.size >= 2) activeFiltersEl.appendChild(modeGroup(() => peopleMode, v => { peopleMode = v; }));
+    Array.from(activePlaces).forEach(key => {
+      add(pill('Place', nameFor(places, key), () => { activePlaces.delete(key); renderBrowse(); renderGallery(); }));
+    });
+    if (activePlaces.size >= 2) activeFiltersEl.appendChild(modeGroup(() => placesMode, v => { placesMode = v; }));
+
+    if (count > 0){
+      const clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'clear-btn';
+      clear.textContent = 'Clear all filters';
+      clear.addEventListener('click', clearAllFilters);
+      activeFiltersEl.appendChild(clear);
+    }
+    activeFiltersEl.classList.toggle('has-items', count > 0);
+  }
+
+  // ---------- collections on the home page ----------
+
+  function collectionsSection(cols){
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    sec.innerHTML = sectionHead('Collections', 'stories told across several videos', false);
+    const grid = document.createElement('div');
+    grid.className = 'cards';
+    const shown = cols.slice().sort((a, b) => b.count - a.count || byName(a, b)).slice(0, 6);
+
+    shown.forEach(c => {
+      const items = videos
+        .filter(v => v.collections.some(x => lc(x) === c.key))
+        .sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+      const cover = items.find(v => v.kind !== 'audio') || items[0];
+      const years = Array.from(new Set(items.map(yearOf).filter(Boolean)));
+      const span = years.length > 1 ? `${years[0]}–${years[years.length - 1]}` : (years[0] || '');
+      const card = document.createElement('button');
+      card.className = 'card card--collection';
+      card.setAttribute('aria-label', `Open the collection ${c.name}`);
+      card.innerHTML = `
+        ${photoMarkup(Object.assign({}, cover, { tags: [] }))}
+        <div class="card__rule"></div>
+        <p class="card__title">${esc(c.name)}</p>
+        <p class="card__meta">${c.count} ${c.count === 1 ? 'item' : 'items'}${span ? ' · ' + span : ''}</p>
+      `;
+      attachThumbFallback(card);
+      card.addEventListener('click', () => { selectCollection(c.key); scrollToToolbar(); });
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+
+    if (cols.length > shown.length){
+      const wrap = document.createElement('div');
+      wrap.className = 'more-wrap';
+      const btn = document.createElement('button');
+      btn.className = 'more-btn';
+      btn.textContent = `See all ${cols.length} collections`;
+      btn.addEventListener('click', () => { openPanel = 'collections'; renderBrowse(); scrollToToolbar(); });
+      wrap.appendChild(btn);
+      sec.appendChild(wrap);
+    }
+    return sec;
+  }
+
+  // ---------- year jump bar ----------
+
+  let yearObserver = null;
+
+  function hideYearbar(){
+    if (yearObserver){ yearObserver.disconnect(); yearObserver = null; }
+    yearbarEl.classList.remove('is-visible');
+  }
+
+  function renderYearbar(groups){
+    hideYearbar();
+    yearbarEl.innerHTML = '';
+    if (!groups.length) return;
+    yearbarEl.classList.add('is-visible');
+
+    const lead = document.createElement('span');
+    lead.className = 'yearbar__lead';
+    lead.textContent = 'Jump to';
+    yearbarEl.appendChild(lead);
+
+    const top = document.createElement('button');
+    top.type = 'button';
+    top.className = 'yearbar__link';
+    top.textContent = 'Highlights';
+    top.addEventListener('click', () => homeEl.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    yearbarEl.appendChild(top);
+
+    groups.forEach(g => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'yearbar__link';
+      b.dataset.year = g.year;
+      b.textContent = g.year;
+      b.addEventListener('click', () => {
+        const target = document.getElementById('year-' + g.year);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      yearbarEl.appendChild(b);
+    });
+
+    // Highlight the year currently on screen.
+    const order = groups.map(g => g.year);
+    const visible = new Set();
+    yearObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) visible.add(e.target.dataset.year); else visible.delete(e.target.dataset.year);
+      });
+      const current = order.find(y => visible.has(y));
+      yearbarEl.querySelectorAll('.yearbar__link[data-year]').forEach(b => {
+        b.dataset.active = String(b.dataset.year === current);
+      });
+    }, { rootMargin: '-90px 0px -60% 0px' });
+    homeEl.querySelectorAll('.section[data-year]').forEach(sec => yearObserver.observe(sec));
+  }
+
+  // ---------- flat results view (search, filters, or person sort) ----------
+
+  function matchesFacet(keys, selected, mode, extraKey){
+    const wanted = Array.from(selected);
+    if (extraKey && !selected.has(extraKey)) wanted.push(extraKey);
+    if (!wanted.length) return true;
+    return mode === 'all' ? wanted.every(k => keys.includes(k)) : wanted.some(k => keys.includes(k));
+  }
+
+  // Everything matching the current search, tag, collection, people, and places.
+  // With several people (or places) selected, "all" mode keeps items that include
+  // every one; "any" mode keeps items that include at least one.
+  // `extra` lets the panels ask "what if this person/place were added too?"
+  function filteredVideos(extra){
+    extra = extra || {};
+    const search = parseSearch(searchEl.value);
     return videos.filter(v => {
-      const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
-      const keys = v.people.map(n => n.toLowerCase());
-      const wanted = Array.from(activePeople);
-      if (extraPerson && !activePeople.has(extraPerson)) wanted.push(extraPerson);
-      const personOk = wanted.length === 0
-        || (peopleMode === 'all' ? wanted.every(k => keys.includes(k)) : wanted.some(k => keys.includes(k)));
-      const searchOk = tokens.length === 0 || matches(v, tokens);
-      return tagOk && personOk && searchOk;
+      if (activeTag !== 'All' && !v.tags.includes(activeTag)) return false;
+      if (activeCollection && !v.collections.some(c => lc(c) === activeCollection)) return false;
+      if (!matchesFacet(v.people.map(lc), activePeople, peopleMode, extra.person)) return false;
+      if (!matchesFacet(v.places.map(lc), activePlaces, placesMode, extra.place)) return false;
+      if (search.tokens.length && !matches(v, search.tokens)) return false;
+      if (search.age && !matchesAge(v, search.age, search.tokens)) return false;
+      return true;
     });
   }
 
   function renderFlat(){
+    hideYearbar();
     homeEl.style.display = 'none';
     galleryEl.style.display = '';
 
@@ -1578,9 +2198,11 @@
 
   // The grouped home page shows only when nothing is narrowing the list.
   function isHomeView(){
-    return queryTokens(searchEl.value).length === 0
+    return !searchActive()
       && activeTag === 'All'
+      && !activeCollection
       && activePeople.size === 0
+      && activePlaces.size === 0
       && sortEl.value !== 'person-asc';
   }
 
@@ -1594,6 +2216,12 @@
   const modalCaption = document.getElementById('modalCaption');
   const modalClose = document.getElementById('modalClose');
   const modalAgain = document.getElementById('modalAgain');
+  const modalMeta = document.getElementById('modalMeta');
+  const modalNav = document.getElementById('modalNav');
+  const slideCount = document.getElementById('slideCount');
+  const slidePrev = document.getElementById('slidePrev');
+  const slideNext = document.getElementById('slideNext');
+  const slideShuffle = document.getElementById('slideShuffle');
   const surpriseBtn = document.getElementById('surpriseBtn');
 
   const WAVE_SVG = `<svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true"><rect x="2" y="20" width="6" height="12" rx="3"/><rect x="14" y="10" width="6" height="32" rx="3"/><rect x="26" y="2" width="6" height="48" rx="3"/><rect x="38" y="14" width="6" height="24" rx="3"/><rect x="50" y="6" width="6" height="40" rx="3"/><rect x="62" y="18" width="6" height="16" rx="3"/></svg>`;
@@ -1618,10 +2246,14 @@
   }
 
   function openModal(video, opts){
+    const inShow = !!(opts && opts.slideshow);
+    if (!inShow) slideshow = null;
     modalAgain.style.display = (opts && opts.surprise) ? '' : 'none';
+    modalNav.style.display = inShow ? 'flex' : 'none';
     modalFrameWrap.className = 'modal__frame-wrap' + (video.kind === 'audio' ? ' is-audio' : '');
     modalFrameWrap.innerHTML = embedFor(video);
     modalTitle.textContent = video.title;
+    modalMeta.textContent = metaLine(video);
     modalCaption.textContent = video.caption;
     modalBackdrop.dataset.open = 'true';
     modalClose.focus();
@@ -1647,15 +2279,76 @@
   surpriseBtn.addEventListener('click', surprise);
   modalAgain.addEventListener('click', surprise);
 
+  // ---------- slideshow ----------
+  // Steps through whatever list is on screen (the whole archive from the home
+  // page). Manual: Previous/Next buttons or the left/right arrow keys.
+
+  function startSlideshow(){
+    const list = isHomeView() ? sortVideos(videos) : sortVideos(filteredVideos());
+    if (!list.length) return;
+    slideshow = { list: list.slice(), original: list.slice(), index: 0, shuffled: false };
+    showSlide();
+  }
+
+  function updateSlideUi(){
+    slideCount.textContent = `${slideshow.index + 1} of ${slideshow.list.length}`;
+    slideShuffle.dataset.active = String(slideshow.shuffled);
+    slideShuffle.setAttribute('aria-pressed', String(slideshow.shuffled));
+  }
+
+  function showSlide(){
+    openModal(slideshow.list[slideshow.index], { slideshow: true });
+    updateSlideUi();
+  }
+
+  function stepSlide(delta){
+    if (!slideshow) return;
+    const n = slideshow.list.length;
+    slideshow.index = (slideshow.index + delta + n) % n;
+    showSlide();
+  }
+
+  // Shuffling keeps the current item playing and reorders everything after it.
+  function toggleShuffle(){
+    if (!slideshow) return;
+    const current = slideshow.list[slideshow.index];
+    if (!slideshow.shuffled){
+      const rest = slideshow.original.filter(v => v !== current);
+      for (let i = rest.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [rest[i], rest[j]] = [rest[j], rest[i]];
+      }
+      slideshow.list = [current, ...rest];
+      slideshow.index = 0;
+    } else {
+      slideshow.list = slideshow.original.slice();
+      slideshow.index = slideshow.list.indexOf(current);
+    }
+    slideshow.shuffled = !slideshow.shuffled;
+    updateSlideUi();
+  }
+
+  slidePrev.addEventListener('click', () => stepSlide(-1));
+  slideNext.addEventListener('click', () => stepSlide(1));
+  slideShuffle.addEventListener('click', toggleShuffle);
+
   function closeModal(){
+    slideshow = null;
+    modalNav.style.display = 'none';
     modalBackdrop.dataset.open = 'false';
     modalFrameWrap.innerHTML = '';
   }
   modalClose.addEventListener('click', closeModal);
   modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){ closeModal(); return; }
+    if (slideshow && modalBackdrop.dataset.open === 'true'){
+      if (e.key === 'ArrowRight'){ e.preventDefault(); stepSlide(1); }
+      else if (e.key === 'ArrowLeft'){ e.preventDefault(); stepSlide(-1); }
+    }
+  });
 
-  searchEl.addEventListener('input', () => { renderPeople(); renderGallery(); });
+  searchEl.addEventListener('input', () => { renderBrowse(); renderGallery(); });
   sortEl.addEventListener('change', renderGallery);
 
   loadingEl.style.display = 'block';
