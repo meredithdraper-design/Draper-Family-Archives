@@ -7,6 +7,9 @@
 <title>The Draper Family Video Archives</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<link rel="preconnect" href="https://img.youtube.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 
@@ -290,6 +293,64 @@
   .chip[data-active="true"]{
     color: var(--maroon);
     border-bottom: 1px solid var(--gold);
+  }
+
+  /* ---------- browse by person ---------- */
+
+  .people{
+    max-width: 900px;
+    margin: 16px auto 0;
+    padding: 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 20px;
+  }
+  .people__label{
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    margin-right: 4px;
+  }
+  .chip--person{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chip__initial{
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-variant: normal;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    color: #fff;
+    background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+  }
+  .chip--more{ font-style: italic; font-variant: normal; letter-spacing: 0; }
+
+  /* ---------- favorite badge ---------- */
+
+  .card__fav{
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--maroon);
+    background: rgba(255,255,255,0.94);
+    box-shadow: 0 2px 7px rgba(var(--shadow-rgb), 0.28);
   }
 
   /* ---------- status ---------- */
@@ -711,6 +772,7 @@
   </div>
 
   <div class="chips" id="chips"></div>
+  <div class="people" id="people"></div>
 
   <p class="status-line" id="status"></p>
 
@@ -781,9 +843,11 @@
   let videos = [];
   let allTags = ['All'];
   let activeTag = 'All';
+  let activePerson = null;   // lowercase name key, or null for everyone
 
   const galleryEl = document.getElementById('gallery');
   const homeEl = document.getElementById('home');
+  const peopleEl = document.getElementById('people');
   const chipsEl = document.getElementById('chips');
   const statusEl = document.getElementById('status');
   const emptyEl = document.getElementById('empty');
@@ -812,6 +876,11 @@
     if (driveMatch) return { source: 'drive', id: driveMatch[1] };
 
     return null;
+  }
+
+  function splitPeople(raw){
+    if (!raw) return [];
+    return String(raw).split(/\s*(?:[,;&]|\band\b)\s*/i).map(s => s.trim()).filter(Boolean);
   }
 
   function splitList(raw){
@@ -850,7 +919,7 @@
           source: ref.source,
           kind: kind,
           videoId: ref.id,
-          people: splitList(pick(row, ["People", "people"])),
+          people: splitPeople(pick(row, ["People", "people"])),
           tags: splitList(pick(row, ["Tags", "tags"])),
           caption: String(pick(row, ["Comments/Description", "Caption", "caption", "Description"])).trim(),
           location: String(pick(row, ["Location", "location"])).trim()
@@ -859,12 +928,43 @@
       .filter(Boolean);
   }
 
+  // ---------- saved copy, so repeat visits open instantly ----------
+  // The last good list is kept in this browser. On the next visit the page
+  // shows it right away, then checks for updates in the background and only
+  // redraws if something actually changed.
+
+  const CACHE_KEY = 'draperArchive.videos.v1';
+
+  function readCache(){
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (data && data.source === DATA_URL && Array.isArray(data.videos) && data.videos.length) return data;
+    } catch (e) { /* storage unavailable or damaged: just load normally */ }
+    return null;
+  }
+
+  function writeCache(list){
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ source: DATA_URL, savedAt: Date.now(), videos: list }));
+    } catch (e) { /* private browsing or full storage: skip saving */ }
+  }
+
   function loadVideos(){
     if (!DATA_URL || DATA_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE"){
       videos = SAMPLE_VIDEOS;
       finishLoading();
       return;
     }
+
+    const cached = readCache();
+    const cachedSignature = cached ? JSON.stringify(cached.videos) : null;
+    if (cached){
+      videos = cached.videos;
+      finishLoading();
+    }
+
     fetch(DATA_URL)
       .then(res => {
         if (!res.ok) throw new Error(`Server responded with ${res.status}`);
@@ -873,13 +973,22 @@
       .then(data => {
         if (data && data.error) throw new Error(data.error);
         const parsed = rowsToVideos(data);
-        videos = parsed.length ? parsed : SAMPLE_VIDEOS;
         if (!parsed.length){
-          showError("The endpoint responded but no rows had a usable YouTube link.");
+          if (!cached){
+            videos = SAMPLE_VIDEOS;
+            showError("The endpoint responded but no rows had a usable YouTube link.");
+            finishLoading();
+          }
+          return;
         }
-        finishLoading();
+        writeCache(parsed);
+        if (JSON.stringify(parsed) !== cachedSignature){
+          videos = parsed;
+          finishLoading();
+        }
       })
       .catch(err => {
+        if (cached) return;   // keep showing the saved copy
         videos = SAMPLE_VIDEOS;
         showError(err.message || String(err));
         finishLoading();
@@ -896,7 +1005,11 @@
     const uniqueTags = Array.from(new Set(videos.flatMap(v => v.tags)));
     uniqueTags.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }));
     allTags = ['All', ...uniqueTags];
+    // If a refresh removed the tag or person being viewed, fall back to everything.
+    if (!allTags.includes(activeTag)) activeTag = 'All';
+    if (activePerson && !peopleList().some(p => p.key === activePerson)) activePerson = null;
     renderChips();
+    renderPeople();
     renderGallery();
   }
 
@@ -963,8 +1076,10 @@
     return `${long} ${short} ${d.getFullYear()} ${d.getDate()} ${iso}`;
   }
 
+  const searchCache = new WeakMap();
+
   function searchIndexFor(video){
-    if (video._idx) return video._idx;
+    if (searchCache.has(video)) return searchCache.get(video);
     const parts = [
       video.title, video.caption, video.location,
       ...video.tags, ...video.people,
@@ -973,8 +1088,9 @@
     ];
     const text = normalizeText(parts.join(' '));
     const stemText = text.split(' ').map(stemWord).join(' ');
-    video._idx = { text, stemText };
-    return video._idx;
+    const idx = { text, stemText };
+    searchCache.set(video, idx);
+    return idx;
   }
 
   function queryTokens(raw){
@@ -1003,13 +1119,23 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // A video counts as a favorite when one of its tags is "Favorite" (or "Favorites").
+  const FAVORITE_RE = /^favou?rites?$/i;
+  const isFavorite = v => v.tags.some(t => FAVORITE_RE.test(t.trim()));
+
+  const FAVORITE_BADGE = `<span class="card__fav" title="Favorite" role="img" aria-label="Favorite"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2.5 14.9,8.6 21.5,9.5 16.7,14.1 17.9,20.7 12,17.5 6.1,20.7 7.3,14.1 2.5,9.5 9.1,8.6"/></svg></span>`;
+
+  function ariaLabelFor(v){
+    return `${v.kind === 'audio' ? 'Play recording' : 'Play'} ${v.title}${isFavorite(v) ? ' (favorite)' : ''}`;
+  }
+
   const PLAY_ICON = `<svg width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.94)"/><path d="M10 8l6 4-6 4z" fill="#24476B"/></svg>`;
 
   function photoMarkup(v){
     const inner = v.kind === 'audio'
       ? `<div class="card__audio">${WAVE_SVG}<span class="card__badge">Audio recording</span></div>`
       : `<img src="${thumbnailFor(v)}" alt="" loading="lazy">`;
-    return `<div class="card__photo">${inner}<div class="card__play">${PLAY_ICON}</div></div>`;
+    return `<div class="card__photo">${inner}${isFavorite(v) ? FAVORITE_BADGE : ''}<div class="card__play">${PLAY_ICON}</div></div>`;
   }
 
   // If a thumbnail can't load (Drive can't make one for audio files),
@@ -1033,7 +1159,7 @@
   function makeCard(v){
     const card = document.createElement('button');
     card.className = 'card';
-    card.setAttribute('aria-label', `${v.kind === 'audio' ? 'Play recording' : 'Play'} ${v.title}`);
+    card.setAttribute('aria-label', ariaLabelFor(v));
     card.innerHTML = `
       ${photoMarkup(v)}
       <div class="card__rule"></div>
@@ -1098,6 +1224,49 @@
       .slice(0, limit);
   }
 
+  // ---------- favorites ----------
+
+  function todaySeed(){
+    const n = new Date();
+    return n.getFullYear() * 10000 + (n.getMonth() + 1) * 100 + n.getDate();
+  }
+
+  // Small seeded random generator: same sequence for the same seed.
+  function seededRandom(seed){
+    let a = seed >>> 0;
+    return function(){
+      a += 0x6D2B79F5;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // A fresh selection of favorites each day, the same for everyone that day.
+  function favoritesForToday(limit){
+    const favs = videos.filter(isFavorite);
+    if (!favs.length) return null;
+    const rnd = seededRandom(todaySeed() + 17);
+    const arr = favs.slice();
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(rnd() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return { items: arr.slice(0, limit), total: favs.length };
+  }
+
+  function favoriteTagName(){
+    return allTags.find(t => FAVORITE_RE.test(t.trim()));
+  }
+
+  function setTag(tag){
+    activeTag = tag;
+    renderChips();
+    renderGallery();
+    document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   // ---------- home view sections ----------
 
   const PER_YEAR = 8;
@@ -1128,7 +1297,7 @@
     sec.innerHTML = sectionHead('Spotlight of the day', '', false);
     const btn = document.createElement('button');
     btn.className = 'spotlight';
-    btn.setAttribute('aria-label', `${v.kind === 'audio' ? 'Play recording' : 'Play'} ${v.title}`);
+    btn.setAttribute('aria-label', ariaLabelFor(v));
     btn.innerHTML = `
       ${photoMarkup(v)}
       <div class="spotlight__body">
@@ -1213,6 +1382,23 @@
       ));
     }
 
+    const favs = favoritesForToday(4);
+    if (favs){
+      const favSec = cardGridSection('Favorites', favs.total > 4 ? 'a new selection each day' : '', favs.items);
+      const favTag = favoriteTagName();
+      if (favs.total > favs.items.length && favTag){
+        const wrap = document.createElement('div');
+        wrap.className = 'more-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'more-btn';
+        btn.textContent = `See all ${favs.total} favorites`;
+        btn.addEventListener('click', () => setTag(favTag));
+        wrap.appendChild(btn);
+        favSec.appendChild(wrap);
+      }
+      homeEl.appendChild(favSec);
+    }
+
     const recent = mostRecent(4);
     if (recent.length) homeEl.appendChild(cardGridSection('Most recent', '', recent));
 
@@ -1229,14 +1415,88 @@
     statusEl.textContent = `${videos.length} ${videos.length === 1 ? 'item' : 'items'} across ${yearCount} ${yearCount === 1 ? 'year' : 'years'}`;
   }
 
+  // ---------- browse by person ----------
+
+  const PEOPLE_COLLAPSED = 10;
+  let peopleExpanded = false;
+
+  function peopleList(){
+    const map = new Map();
+    videos.forEach(v => {
+      const seen = new Set();
+      v.people.forEach(name => {
+        const key = name.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (!map.has(key)) map.set(key, { key, name, count: 0 });
+        map.get(key).count++;
+      });
+    });
+    return Array.from(map.values());
+  }
+
+  function renderPeople(){
+    const all = peopleList().sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    peopleEl.innerHTML = '';
+    if (all.length < 2){ peopleEl.style.display = 'none'; return; }
+    peopleEl.style.display = '';
+
+    // With a long list, start with the most-featured people; the rest are one click away.
+    let shown = all;
+    const collapsible = all.length > PEOPLE_COLLAPSED;
+    if (collapsible && !peopleExpanded){
+      const top = all.slice()
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+        .slice(0, PEOPLE_COLLAPSED);
+      const keep = new Set(top.map(p => p.key));
+      if (activePerson) keep.add(activePerson);
+      shown = all.filter(p => keep.has(p.key));
+    }
+
+    const label = document.createElement('span');
+    label.className = 'people__label';
+    label.textContent = 'Browse by person';
+    peopleEl.appendChild(label);
+
+    const everyone = document.createElement('button');
+    everyone.className = 'chip';
+    everyone.textContent = 'Everyone';
+    everyone.dataset.active = (!activePerson).toString();
+    everyone.addEventListener('click', () => { activePerson = null; renderPeople(); renderGallery(); });
+    peopleEl.appendChild(everyone);
+
+    shown.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'chip chip--person';
+      btn.dataset.active = (p.key === activePerson).toString();
+      btn.title = `${p.count} ${p.count === 1 ? 'item' : 'items'}`;
+      btn.innerHTML = `<span class="chip__initial">${esc(Array.from(p.name)[0].toUpperCase())}</span>${esc(p.name)}`;
+      btn.addEventListener('click', () => {
+        activePerson = (activePerson === p.key) ? null : p.key;
+        renderPeople();
+        renderGallery();
+      });
+      peopleEl.appendChild(btn);
+    });
+
+    if (collapsible){
+      const more = document.createElement('button');
+      more.className = 'chip chip--more';
+      more.textContent = peopleExpanded ? 'Show fewer' : `Show all ${all.length}`;
+      more.addEventListener('click', () => { peopleExpanded = !peopleExpanded; renderPeople(); });
+      peopleEl.appendChild(more);
+    }
+  }
+
   // ---------- flat results view (search, tag, or person sort) ----------
 
   function filteredVideos(){
     const tokens = queryTokens(searchEl.value);
     return videos.filter(v => {
       const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
+      const personOk = !activePerson || v.people.some(n => n.toLowerCase() === activePerson);
       const searchOk = tokens.length === 0 || matches(v, tokens);
-      return tagOk && searchOk;
+      return tagOk && personOk && searchOk;
     });
   }
 
@@ -1257,6 +1517,7 @@
   function isHomeView(){
     return queryTokens(searchEl.value).length === 0
       && activeTag === 'All'
+      && !activePerson
       && sortEl.value !== 'person-asc';
   }
 
