@@ -1114,8 +1114,8 @@
   const BIRTH = Object.entries(BIRTHDAYS).map(([name, iso]) => ({ name, key: lc(name), iso }));
 
   let videos = [];
-  let allTags = ['All'];
-  let activeTag = 'All';
+  const activeTags = new Set();     // lowercase tags selected under Browse by > Tags
+  let tagsMode = 'all';
   const activePeople = new Set();   // lowercase names selected under Browse by > People
   let peopleMode = 'all';           // 'all' = must include everyone selected, 'any' = at least one
   const activePlaces = new Set();   // lowercase places selected under Browse by > Places
@@ -1296,11 +1296,7 @@
   function finishLoading(){
     loadingEl.style.display = 'none';
     videos = withDerived(videos);
-    const uniqueTags = Array.from(new Set(videos.flatMap(v => v.tags)));
-    uniqueTags.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }));
-    allTags = ['All', ...uniqueTags];
-    // If a refresh removed something being viewed, fall back to everything.
-    if (!allTags.includes(activeTag)) activeTag = 'All';
+    // If a refresh removed something being viewed, drop it from the selection.
     pruneSelections();
     renderBrowse();
     renderGallery();
@@ -1606,16 +1602,17 @@
     return { items: arr.slice(0, limit), total: favs.length };
   }
 
-  function favoriteTagName(){
-    return allTags.find(t => FAVORITE_RE.test(t.trim()));
+  function favoriteTag(){
+    return tagsList().find(t => FAVORITE_RE.test(t.name.trim()));
   }
 
   function scrollToToolbar(){
     document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function setTag(tag){
-    activeTag = tag;
+  function setTag(key){
+    activeTags.clear();
+    activeTags.add(key);
     openPanel = null;
     renderBrowse();
     renderGallery();
@@ -1743,14 +1740,14 @@
     const favs = favoritesForToday(4);
     if (favs){
       const favSec = cardGridSection('Favorites', favs.total > 4 ? 'a new selection each day' : '', favs.items);
-      const favTag = favoriteTagName();
+      const favTag = favoriteTag();
       if (favs.total > favs.items.length && favTag){
         const wrap = document.createElement('div');
         wrap.className = 'more-wrap';
         const btn = document.createElement('button');
         btn.className = 'more-btn';
         btn.textContent = `See all ${favs.total} favorites`;
-        btn.addEventListener('click', () => setTag(favTag));
+        btn.addEventListener('click', () => setTag(favTag.key));
         wrap.appendChild(btn);
         favSec.appendChild(wrap);
       }
@@ -1797,6 +1794,7 @@
     });
     return Array.from(map.values());
   }
+  const tagsList = () => facetList(v => v.tags);
   const peopleList = () => facetList(v => v.people);
   const placesList = () => facetList(v => v.places);
   const collectionsList = () => facetList(v => v.collections);
@@ -1804,6 +1802,8 @@
   const nameFor = (list, key) => { const hit = list.find(x => x.key === key); return hit ? hit.name : key; };
 
   function pruneSelections(){
+    const tags = new Set(tagsList().map(x => x.key));
+    Array.from(activeTags).forEach(k => { if (!tags.has(k)) activeTags.delete(k); });
     const people = new Set(peopleList().map(x => x.key));
     Array.from(activePeople).forEach(k => { if (!people.has(k)) activePeople.delete(k); });
     const places = new Set(placesList().map(x => x.key));
@@ -1813,7 +1813,7 @@
 
   function availableFacets(){
     const out = [];
-    if (allTags.length > 1) out.push('tags');
+    if (tagsList().length > 0) out.push('tags');
     if (peopleList().length > 1) out.push('people');
     if (placesList().length > 1) out.push('places');
     if (collectionsList().length > 0) out.push('collections');
@@ -1821,14 +1821,14 @@
   }
 
   function facetSelectionCount(id){
-    if (id === 'tags') return activeTag !== 'All' ? 1 : 0;
+    if (id === 'tags') return activeTags.size;
     if (id === 'people') return activePeople.size;
     if (id === 'places') return activePlaces.size;
     return activeCollection ? 1 : 0;
   }
 
   function anyFilterActive(){
-    return activeTag !== 'All' || !!activeCollection || activePeople.size > 0
+    return activeTags.size > 0 || !!activeCollection || activePeople.size > 0
       || activePlaces.size > 0 || searchActive();
   }
 
@@ -1856,7 +1856,7 @@
   }
 
   function clearAllFilters(){
-    activeTag = 'All';
+    activeTags.clear();
     activePeople.clear();
     activePlaces.clear();
     dropCollection();
@@ -1914,14 +1914,7 @@
     panelEl.classList.add('is-open');
 
     if (openPanel === 'tags'){
-      allTags.filter(t => t !== 'All').forEach(tag => {
-        panelEl.appendChild(makeChip(tag, tag === activeTag, () => {
-          activeTag = (activeTag === tag) ? 'All' : tag;
-          openPanel = null;
-          renderBrowse();
-          renderGallery();
-        }));
-      });
+      buildMultiPanel('tags', tagsList(), activeTags, () => tagsMode, 'tag', false, Infinity);
     } else if (openPanel === 'collections'){
       collectionsList().sort(byName).forEach(c => {
         const chip = makeChip('', c.key === activeCollection, () => selectCollection(c.key));
@@ -1937,14 +1930,15 @@
 
   // People and places can be combined. Names that wouldn't match anything if
   // added are faded, and the hover text says how many items to expect.
-  function buildMultiPanel(id, list, selected, getMode, extraKey, withInitial){
+  function buildMultiPanel(id, list, selected, getMode, extraKey, withInitial, limit){
     const sorted = list.slice().sort(byName);
     let shown = sorted;
-    const collapsible = sorted.length > PANEL_LIMIT;
+    const cap = limit || PANEL_LIMIT;
+    const collapsible = sorted.length > cap;
     if (collapsible && !expandedFacets.has(id)){
       const top = sorted.slice()
         .sort((a, b) => b.count - a.count || byName(a, b))
-        .slice(0, PANEL_LIMIT);
+        .slice(0, cap);
       const keep = new Set(top.map(x => x.key));
       selected.forEach(k => keep.add(k));
       shown = sorted.filter(x => keep.has(x.key));
@@ -2029,9 +2023,11 @@
     let count = 0;
     const add = el => { activeFiltersEl.appendChild(el); count++; };
 
-    if (activeTag !== 'All'){
-      add(pill('Tag', activeTag, () => { activeTag = 'All'; renderBrowse(); renderGallery(); }));
-    }
+    const tags = tagsList();
+    Array.from(activeTags).forEach(key => {
+      add(pill('Tag', nameFor(tags, key), () => { activeTags.delete(key); renderBrowse(); renderGallery(); }));
+    });
+    if (activeTags.size >= 2) activeFiltersEl.appendChild(modeGroup(() => tagsMode, v => { tagsMode = v; }));
     if (activeCollection){
       add(pill('Collection', nameFor(collections, activeCollection), () => selectCollection(null)));
     }
@@ -2172,7 +2168,7 @@
     extra = extra || {};
     const search = parseSearch(searchEl.value);
     return videos.filter(v => {
-      if (activeTag !== 'All' && !v.tags.includes(activeTag)) return false;
+      if (!matchesFacet(v.tags.map(lc), activeTags, tagsMode, extra.tag)) return false;
       if (activeCollection && !v.collections.some(c => lc(c) === activeCollection)) return false;
       if (!matchesFacet(v.people.map(lc), activePeople, peopleMode, extra.person)) return false;
       if (!matchesFacet(v.places.map(lc), activePlaces, placesMode, extra.place)) return false;
@@ -2199,7 +2195,7 @@
   // The grouped home page shows only when nothing is narrowing the list.
   function isHomeView(){
     return !searchActive()
-      && activeTag === 'All'
+      && activeTags.size === 0
       && !activeCollection
       && activePeople.size === 0
       && activePlaces.size === 0
