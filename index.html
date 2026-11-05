@@ -335,6 +335,15 @@
   }
   .chip--more{ font-style: italic; font-variant: normal; letter-spacing: 0; }
   .chip--dim{ opacity: 0.4; }
+  .people__mode{
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 18px;
+    margin-top: 2px;
+  }
 
   /* ---------- favorite badge ---------- */
 
@@ -845,6 +854,7 @@
   let allTags = ['All'];
   let activeTag = 'All';
   const activePeople = new Set();   // lowercase names selected in "Browse by person"
+  let peopleMode = 'all';           // 'all' = must include everyone selected, 'any' = at least one of them
 
   const galleryEl = document.getElementById('gallery');
   const homeEl = document.getElementById('home');
@@ -1458,7 +1468,7 @@
 
     const label = document.createElement('span');
     label.className = 'people__label';
-    label.textContent = activePeople.size > 1 ? 'Browse by person (together)' : 'Browse by person';
+    label.textContent = 'Browse by person';
     peopleEl.appendChild(label);
 
     const everyone = document.createElement('button');
@@ -1468,20 +1478,28 @@
     everyone.addEventListener('click', () => { activePeople.clear(); renderPeople(); renderGallery(); });
     peopleEl.appendChild(everyone);
 
+    const currentCount = filteredVideos().length;
+    const narrowing = activePeople.size > 0 || activeTag !== 'All' || queryTokens(searchEl.value).length > 0;
+    const anyMode = peopleMode === 'any' && activePeople.size > 0;
+
     shown.forEach(p => {
       const selected = activePeople.has(p.key);
-      // How many results there would be if this person were added to the selection.
-      const together = selected ? null : filteredVideos(p.key).length;
+      // "All" mode: how many results remain if this person is added.
+      // "Any" mode: how many extra results this person would bring in.
+      const withPerson = selected ? 0 : filteredVideos(p.key).length;
+      const together = anyMode ? withPerson - currentCount : withPerson;
       const btn = document.createElement('button');
       btn.className = 'chip chip--person' + (!selected && together === 0 ? ' chip--dim' : '');
       btn.dataset.active = selected.toString();
       btn.setAttribute('aria-pressed', selected.toString());
       if (selected){
         btn.title = 'Click to remove from the selection';
-      } else if (activePeople.size > 0 || activeTag !== 'All' || queryTokens(searchEl.value).length){
+      } else if (narrowing){
         btn.title = together === 0
-          ? 'No matching items with this person'
-          : `${together} ${together === 1 ? 'item' : 'items'} if added`;
+          ? (anyMode ? 'Nothing new to add' : 'No matching items with this person')
+          : (anyMode
+              ? `Adds ${together} more ${together === 1 ? 'item' : 'items'}`
+              : `${together} ${together === 1 ? 'item' : 'items'} if added`);
       } else {
         btn.title = `${p.count} ${p.count === 1 ? 'item' : 'items'}`;
       }
@@ -1501,20 +1519,45 @@
       more.addEventListener('click', () => { peopleExpanded = !peopleExpanded; renderPeople(); });
       peopleEl.appendChild(more);
     }
+
+    // Only meaningful once two or more people are selected.
+    if (activePeople.size >= 2){
+      const mode = document.createElement('div');
+      mode.className = 'people__mode';
+      mode.setAttribute('role', 'group');
+      mode.setAttribute('aria-label', 'How to combine the selected people');
+      const lead = document.createElement('span');
+      lead.className = 'people__label';
+      lead.textContent = 'Show items with';
+      mode.appendChild(lead);
+      [['all', 'All of them together'], ['any', 'Any of them']].forEach(([value, text]) => {
+        const b = document.createElement('button');
+        b.className = 'chip';
+        b.textContent = text;
+        b.dataset.active = (peopleMode === value).toString();
+        b.setAttribute('aria-pressed', (peopleMode === value).toString());
+        b.addEventListener('click', () => { peopleMode = value; renderPeople(); renderGallery(); });
+        mode.appendChild(b);
+      });
+      peopleEl.appendChild(mode);
+    }
   }
 
   // ---------- flat results view (search, tag, or person sort) ----------
 
   // Everything matching the current search, tag, and selected people.
-  // Selecting several people narrows the list: a video must include all of them.
+  // With several people selected, "all" mode keeps videos that include every one
+  // of them; "any" mode keeps videos that include at least one.
   // `extraPerson` lets the people row ask "what if this person were added too?"
   function filteredVideos(extraPerson){
     const tokens = queryTokens(searchEl.value);
     return videos.filter(v => {
       const tagOk = activeTag === 'All' || v.tags.includes(activeTag);
       const keys = v.people.map(n => n.toLowerCase());
-      const personOk = Array.from(activePeople).every(k => keys.includes(k))
-        && (!extraPerson || keys.includes(extraPerson));
+      const wanted = Array.from(activePeople);
+      if (extraPerson && !activePeople.has(extraPerson)) wanted.push(extraPerson);
+      const personOk = wanted.length === 0
+        || (peopleMode === 'all' ? wanted.every(k => keys.includes(k)) : wanted.some(k => keys.includes(k)));
       const searchOk = tokens.length === 0 || matches(v, tokens);
       return tagOk && personOk && searchOk;
     });
