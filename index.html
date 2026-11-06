@@ -248,6 +248,31 @@
     cursor: pointer;
   }
   .modal__again:hover{ color: var(--maroon-light); }
+  .modal__actions{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    margin: 16px 4px 0;
+  }
+  .modal__actions .modal__again{ margin: 0; }
+  .modal__action{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Source Serif 4', serif;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+    color: var(--maroon);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--gold);
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .modal__action:hover{ color: var(--maroon-light); }
+  .modal__action:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
   .modal__again:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
 
   .select-wrap{ position: relative; }
@@ -1050,6 +1075,11 @@
     <code id="errorDetail"></code>
   </div>
 
+  <div class="notice" id="linkNotice">
+    <h2>That memory couldn't be found</h2>
+    <p>The link may be old, or the video may have been removed. You're welcome to browse the rest of the archive.</p>
+  </div>
+
   <footer>Made for the family, one video at a time.</footer>
 
 </div>
@@ -1061,13 +1091,20 @@
     <h2 class="modal__title" id="modalTitle"></h2>
     <p class="modal__meta" id="modalMeta"></p>
     <p class="modal__caption" id="modalCaption"></p>
+    <div class="modal__actions">
+      <button type="button" class="modal__action" id="copyLinkBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>Copy link</span>
+      </button>
+      <button type="button" class="modal__action" id="shareBtn" style="display:none">Share&hellip;</button>
+      <button class="modal__again" id="modalAgain" type="button" style="display:none">Surprise me again</button>
+    </div>
     <div class="modal__nav" id="modalNav" style="display:none">
       <button type="button" class="modal__navbtn" id="slidePrev">&lsaquo; Previous</button>
       <span class="modal__count" id="slideCount"></span>
       <button type="button" class="modal__navbtn" id="slideNext">Next &rsaquo;</button>
       <button type="button" class="modal__navbtn" id="slideShuffle" aria-pressed="false">Shuffle</button>
     </div>
-    <button class="modal__again" id="modalAgain" type="button" style="display:none">Surprise me again</button>
   </div>
 </div>
 
@@ -1106,8 +1143,8 @@
   // Use YYYY-MM-DD. If you only know the month, use the 1st. To add someone,
   // add another line in the same format.
   const BIRTHDAYS = {
-    "Savannah": "2020-05-01",
-    "Penelope": "2022-05-01"
+    "Savannah": "2020-05-06",
+    "Penelope": "2022-05-20"
   };
 
   const lc = s => String(s).toLowerCase();
@@ -1124,6 +1161,7 @@
   let sortBeforeCollection = null;  // sort setting to restore when a collection is closed
   let openPanel = null;             // which Browse by panel is open
   let slideshow = null;             // { list, original, index, shuffled } while a slideshow runs
+  let currentItem = null;           // the item open in the player
 
   const galleryEl = document.getElementById('gallery');
   const homeEl = document.getElementById('home');
@@ -1136,6 +1174,7 @@
   const loadingEl = document.getElementById('loading');
   const errorEl = document.getElementById('errorNotice');
   const errorDetailEl = document.getElementById('errorDetail');
+  const linkNoticeEl = document.getElementById('linkNotice');
   const searchEl = document.getElementById('search');
   const sortEl = document.getElementById('sortBy');
 
@@ -1248,6 +1287,7 @@
     if (!DATA_URL || DATA_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE"){
       videos = SAMPLE_VIDEOS;
       finishLoading();
+      openPendingVideo(true);
       return;
     }
 
@@ -1285,7 +1325,8 @@
         videos = SAMPLE_VIDEOS;
         showError(err.message || String(err));
         finishLoading();
-      });
+      })
+      .finally(() => openPendingVideo(true));
   }
 
   function showError(detail){
@@ -1296,10 +1337,12 @@
   function finishLoading(){
     loadingEl.style.display = 'none';
     videos = withDerived(videos);
+    consumeLinkFilters();   // a shared link may carry a search or filters
     // If a refresh removed something being viewed, drop it from the selection.
     pruneSelections();
     renderBrowse();
     renderGallery();
+    openPendingVideo(false);   // ...or a single video to open
   }
 
   // ---------- rendering ----------
@@ -2048,7 +2091,22 @@
       clear.addEventListener('click', clearAllFilters);
       activeFiltersEl.appendChild(clear);
     }
-    activeFiltersEl.classList.toggle('has-items', count > 0);
+    const shareable = anyFilterActive();
+    if (shareable){
+      const share = document.createElement('button');
+      share.type = 'button';
+      share.className = 'clear-btn';
+      share.textContent = 'Copy link to this view';
+      share.addEventListener('click', () => {
+        const url = viewLink();
+        copyText(url).then(ok => {
+          if (ok){ share.textContent = 'Link copied'; setTimeout(() => { share.textContent = 'Copy link to this view'; }, 2000); }
+          else window.prompt('Copy this link:', url);
+        });
+      });
+      activeFiltersEl.appendChild(share);
+    }
+    activeFiltersEl.classList.toggle('has-items', count > 0 || shareable);
   }
 
   // ---------- collections on the home page ----------
@@ -2212,6 +2270,8 @@
   const modalCaption = document.getElementById('modalCaption');
   const modalClose = document.getElementById('modalClose');
   const modalAgain = document.getElementById('modalAgain');
+  const copyLinkBtn = document.getElementById('copyLinkBtn');
+  const shareBtn = document.getElementById('shareBtn');
   const modalMeta = document.getElementById('modalMeta');
   const modalNav = document.getElementById('modalNav');
   const slideCount = document.getElementById('slideCount');
@@ -2243,6 +2303,7 @@
 
   function openModal(video, opts){
     const inShow = !!(opts && opts.slideshow);
+    currentItem = video;
     if (!inShow) slideshow = null;
     modalAgain.style.display = (opts && opts.surprise) ? '' : 'none';
     modalNav.style.display = inShow ? 'flex' : 'none';
@@ -2274,6 +2335,178 @@
 
   surpriseBtn.addEventListener('click', surprise);
   modalAgain.addEventListener('click', surprise);
+
+  // ---------- shared links ----------
+  // A link to one memory ends in #v=... and a link to a filtered view carries
+  // the search, tags, people, places, collection, and sort in the same place.
+  // The address after the # never leaves the visitor's browser, so this works
+  // on a plain GitHub Pages site. Anyone with a link can open the archive.
+
+  function pageBase(){ return location.href.split('#')[0]; }
+
+  function itemKey(v){
+    const prefix = { youtube: 'y', drive: 'd', 'audio-file': 'a' }[v.source] || 'y';
+    return `${prefix}:${v.videoId}`;
+  }
+
+  function findByKey(key){ return videos.find(v => itemKey(v) === key); }
+
+  function itemLink(v){
+    return pageBase() + '#v=' + encodeURIComponent(itemKey(v)).replace(/%3A/gi, ':');
+  }
+
+  function viewLink(){
+    const p = new URLSearchParams();
+    const q = searchEl.value.trim();
+    if (q) p.set('q', q);
+    if (activeTags.size){
+      p.set('t', Array.from(activeTags).join(','));
+      if (tagsMode === 'any' && activeTags.size > 1) p.set('tm', 'any');
+    }
+    if (activePeople.size){
+      p.set('p', Array.from(activePeople).join(','));
+      if (peopleMode === 'any' && activePeople.size > 1) p.set('pm', 'any');
+    }
+    if (activePlaces.size){
+      p.set('l', Array.from(activePlaces).join(','));
+      if (placesMode === 'any' && activePlaces.size > 1) p.set('lm', 'any');
+    }
+    if (activeCollection) p.set('c', activeCollection);
+    if (sortEl.value !== 'date-desc') p.set('s', sortEl.value);
+    return pageBase() + '#' + p.toString().replace(/%2C/gi, ',').replace(/%3A/gi, ':');
+  }
+
+  function legacyCopy(text){
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  // Resolves to true if the text was copied, false if the browser refused.
+  function copyText(text){
+    if (navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+
+  function flashLabel(btn, text){
+    const label = btn.querySelector('span') || btn;
+    if (!label.dataset.orig) label.dataset.orig = label.textContent;
+    label.textContent = text;
+    clearTimeout(btn._flash);
+    btn._flash = setTimeout(() => { label.textContent = label.dataset.orig; }, 2000);
+  }
+
+  copyLinkBtn.addEventListener('click', () => {
+    if (!currentItem) return;
+    const url = itemLink(currentItem);
+    copyText(url).then(ok => {
+      if (ok) flashLabel(copyLinkBtn, 'Link copied');
+      else window.prompt('Copy this link:', url);
+    });
+  });
+
+  // On phones (and some computers) offer the system share sheet as well.
+  if (navigator.share){
+    shareBtn.style.display = '';
+    shareBtn.addEventListener('click', () => {
+      if (!currentItem) return;
+      navigator.share({
+        title: currentItem.title,
+        text: `${currentItem.title} - The Draper Family Video Archives`,
+        url: itemLink(currentItem)
+      }).catch(() => { /* cancelled */ });
+    });
+  }
+
+  // ----- opening a shared link -----
+
+  const SORT_VALUES = ['date-desc', 'date-asc', 'person-asc'];
+  let pendingLink = parseLinkHash();
+  let linkFiltersApplied = false;
+
+  function parseLinkHash(){
+    const raw = location.hash.replace(/^#/, '');
+    if (!raw) return null;
+    const p = new URLSearchParams(raw);
+    const link = {
+      v: p.get('v'), q: p.get('q'),
+      t: p.get('t'), tm: p.get('tm'),
+      p: p.get('p'), pm: p.get('pm'),
+      l: p.get('l'), lm: p.get('lm'),
+      c: p.get('c'), s: p.get('s')
+    };
+    return Object.values(link).some(Boolean) ? link : null;
+  }
+
+  const listFrom = str => (str || '').split(',').map(x => lc(x.trim())).filter(Boolean);
+
+  // Applies the search and filters in a link, once the list of videos is known.
+  function consumeLinkFilters(){
+    if (linkFiltersApplied || !pendingLink) return;
+    linkFiltersApplied = true;
+    const L = pendingLink;
+    if (L.q) searchEl.value = L.q;
+    listFrom(L.t).forEach(k => activeTags.add(k));
+    if (L.tm === 'any') tagsMode = 'any';
+    listFrom(L.p).forEach(k => activePeople.add(k));
+    if (L.pm === 'any') peopleMode = 'any';
+    listFrom(L.l).forEach(k => activePlaces.add(k));
+    if (L.lm === 'any') placesMode = 'any';
+    if (L.c){
+      activeCollection = lc(L.c);
+      sortBeforeCollection = 'date-desc';
+      sortEl.value = 'date-asc';
+    }
+    if (SORT_VALUES.includes(L.s)) sortEl.value = L.s;
+  }
+
+  function openPendingVideo(final){
+    if (pendingLink && pendingLink.v){
+      const v = findByKey(pendingLink.v);
+      if (v){
+        pendingLink.v = null;
+        openModal(v);
+      } else if (final){
+        pendingLink.v = null;
+        linkNoticeEl.style.display = 'block';
+        setTimeout(() => { linkNoticeEl.style.display = 'none'; }, 9000);
+      }
+    }
+    // Once the link has been used, tidy the address bar.
+    if (location.hash && linkFiltersApplied && !(pendingLink && pendingLink.v)){
+      try { history.replaceState(null, '', pageBase()); } catch (e) { /* not allowed here */ }
+    }
+  }
+
+  // Someone pasting a new link into a tab that already has the archive open.
+  window.addEventListener('hashchange', () => {
+    const next = parseLinkHash();
+    if (!next || !videos.length) return;
+    pendingLink = next;
+    linkFiltersApplied = false;
+    activeTags.clear(); activePeople.clear(); activePlaces.clear();
+    tagsMode = peopleMode = placesMode = 'all';
+    dropCollection();
+    searchEl.value = '';
+    sortEl.value = 'date-desc';
+    consumeLinkFilters();
+    pruneSelections();
+    renderBrowse();
+    renderGallery();
+    openPendingVideo(true);
+  });
 
   // ---------- slideshow ----------
   // Steps through whatever list is on screen (the whole archive from the home
