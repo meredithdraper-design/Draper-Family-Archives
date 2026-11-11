@@ -1041,6 +1041,329 @@
   }
 
 
+
+  /* ============================================
+     THEATER VIDEO VIEWER
+     The lights go down when a video opens.
+     ============================================ */
+  .modal-backdrop{
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 35%, rgba(70,105,145,0.30), transparent 70%),
+      linear-gradient(180deg, rgba(20,31,44,0.97), rgba(8,13,20,0.985));
+    padding: 24px 84px;
+  }
+  .modal-backdrop[data-open="true"]{ animation: theater-in .35s ease both; }
+  @keyframes theater-in{ from{ opacity: 0; } to{ opacity: 1; } }
+  .modal-backdrop::before{
+    content: ""; position: absolute; inset: -50%; pointer-events: none; opacity: 0.07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.6 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation: theater-grain 1.2s steps(5) infinite;
+  }
+  @keyframes theater-grain{
+    0%{ transform: translate(0,0); } 20%{ transform: translate(-3%,2%); } 40%{ transform: translate(2%,-3%); }
+    60%{ transform: translate(-2%,-1%); } 80%{ transform: translate(3%,3%); } 100%{ transform: translate(0,0); }
+  }
+  .modal-backdrop::after{
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 85% 75% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+  .modal{
+    z-index: 1;
+    max-height: calc(100vh - 48px); overflow-y: auto;
+    background: rgba(17,26,37,0.92);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    color: #E9EEF4;
+    animation: theater-rise .45s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes theater-rise{ from{ opacity: 0; transform: translateY(14px) scale(.985); } to{ opacity: 1; transform: none; } }
+  .modal__close{
+    top: 12px; right: 12px; z-index: 3;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(10,16,24,0.75); color: #F1F4F8;
+  }
+  .modal__close:focus-visible{ outline: 2px solid #DCE7F2; }
+  .modal__frame-wrap{ border-radius: 3px; box-shadow: 0 12px 34px rgba(0,0,0,0.5); }
+  .modal__title{ color: #F1F4F8; font-weight: 500; font-size: 1.45rem; margin-top: 16px; }
+  .modal__meta{ color: #A5B2C1; font-style: normal; font-size: 0.92rem; }
+  .modal__caption{ color: #C3CEDA; }
+  .modal__action, .modal__again, .modal__navbtn{ color: #DCE7F2; border-bottom-color: rgba(220,231,242,0.35); }
+  .modal__action:hover, .modal__again:hover, .modal__navbtn:hover{ color: #FFFFFF; }
+  .modal__action:focus-visible, .modal__again:focus-visible, .modal__navbtn:focus-visible{ outline-color: #DCE7F2; }
+  .modal__navbtn[data-active="true"]{ background: #E3EAF2; color: #0E1620; border-bottom-color: #E3EAF2; }
+  .modal__nav{ border-top-color: rgba(255,255,255,0.12); }
+  .modal__count{ color: #A5B2C1; }
+  /* the slideshow's own previous/next and count give way to the viewer's arrows */
+  #slidePrev, #slideNext, #slideCount{ display: none; }
+
+  /* names, places, and tags you can tap */
+  .meta-link{
+    font: inherit; color: #DCE7F2; background: none; border: 0; padding: 0; cursor: pointer;
+    text-decoration: underline; text-decoration-color: rgba(220,231,242,0.3); text-underline-offset: 3px;
+    transition: color .2s ease, text-decoration-color .2s ease;
+  }
+  .meta-link:hover{ color: #FFFFFF; text-decoration-color: currentColor; }
+  .meta-link:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; border-radius: 2px; }
+  .meta-age{ color: #8796A8; }
+  .modal__tags{ display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 4px 12px; }
+  .modal__tags:empty{ display: none; }
+  .tag-chip{
+    font: inherit; font-size: 0.82rem; color: #DCE7F2; cursor: pointer;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 3px 12px;
+    transition: background-color .2s ease, border-color .2s ease;
+  }
+  .tag-chip:hover{ background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
+  .tag-chip:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; }
+
+  /* previous / next */
+  .modal__browse{
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    margin: 12px 4px 0; min-height: 24px;
+  }
+  .modal__browse[hidden]{ display: none; }
+  .view-count{ font-size: 0.85rem; color: #8796A8; font-variant-numeric: tabular-nums; }
+  .modal__arrow{
+    width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex: none;
+    color: #F1F4F8; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+    transition: background-color .2s ease, opacity .2s ease;
+  }
+  .modal__arrow:hover:not(:disabled){ background: rgba(255,255,255,0.16); }
+  .modal__arrow:disabled{ opacity: .25; cursor: default; }
+  .modal__arrow:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; }
+  .modal__arrow svg{ width: 20px; height: 20px; }
+  @media (min-width: 900px){
+    /* on big screens the arrows sit out in the dark, either side of the viewer */
+    .modal__arrow{ position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; }
+    .modal__arrow--prev{ left: -70px; }
+    .modal__arrow--next{ right: -70px; }
+    .modal{ overflow: visible; max-height: none; }
+  }
+  @media (max-width: 899px){
+    .modal-backdrop{ padding: 14px; align-items: flex-start; overflow-y: auto; }
+    .modal{ padding: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .modal-backdrop::before{ animation: none; }
+    .modal-backdrop[data-open="true"], .modal{ animation: none; }
+  }
+
+  /* ============================================
+     GROWING UP: featured buttons + timelines
+     ============================================ */
+  .story-cards{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 26px; }
+  .story-card{
+    position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; overflow: hidden;
+    padding: 0; border: 0; border-radius: 4px; cursor: pointer; text-align: left; font: inherit;
+    background: #1E3A57; color: #fff;
+    box-shadow: 0 10px 26px rgba(var(--shadow-rgb), 0.18);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .story-card img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  .story-card::after{
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,16,24,0.05) 30%, rgba(10,16,24,0.82) 100%);
+  }
+  .story-card:hover{ transform: translateY(-3px); box-shadow: 0 16px 34px rgba(var(--shadow-rgb), 0.26); }
+  .story-card:hover img{ transform: scale(1.04); }
+  .story-card:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .story-card__body{ position: absolute; left: 22px; right: 22px; bottom: 18px; z-index: 1; }
+  .story-card__name{
+    display: block; font-family: 'Playfair Display', Georgia, serif; font-weight: 500;
+    font-size: clamp(1.9rem, 4vw, 2.4rem); line-height: 1.05;
+  }
+  .story-card__sub{ display: block; margin-top: 4px; font-style: italic; font-size: 0.95rem; color: rgba(255,255,255,0.82); }
+  .story-card__cta{
+    display: inline-block; margin-top: 12px; font-size: 0.9rem;
+    padding: 5px 14px; border-radius: 999px; background: rgba(255,255,255,0.92); color: #1E3A57;
+  }
+
+  /* a timeline replaces the archive's browsing tools while it's open */
+  .page-frame.is-story > :not(.topbar):not(.story):not(footer){ display: none !important; }
+  .story{ display: none; max-width: 1000px; margin: 0 auto; padding: 8px 36px 40px; }
+  .page-frame.is-story .story{ display: block; }
+  .story__back{
+    font: inherit; font-size: 0.92rem; color: var(--ink-soft); cursor: pointer;
+    background: none; border: 0; padding: 6px 0;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .story__back:hover{ color: var(--maroon); }
+  .story__back:focus-visible{ outline: 2px solid var(--maroon-light); outline-offset: 2px; border-radius: 3px; }
+  .story__head{ text-align: center; margin: 18px 0 8px; }
+  .story__name{
+    margin: 0; font-family: 'Playfair Display', Georgia, serif; font-weight: 500;
+    font-size: clamp(3rem, 9vw, 5rem); line-height: 1; letter-spacing: -0.015em; color: var(--maroon);
+  }
+  .story__sub{ margin: 12px 0 0; font-style: italic; color: var(--ink-soft); font-size: 1.1rem; }
+  .story__rule{ width: 64px; height: 1px; margin: 22px auto 0; background: var(--gold); }
+
+  .chapter{ margin-top: 54px; }
+  .chapter__head{ text-align: center; position: relative; padding-top: 22px; }
+  .chapter__head::before{
+    content: ""; position: absolute; top: 0; left: 50%; width: 11px; height: 11px; margin-left: -5.5px;
+    border-radius: 50%; background: var(--maroon); box-shadow: 0 0 0 4px rgba(36,71,107,0.15);
+  }
+  .chapter__title{ margin: 0; font-family: 'Playfair Display', Georgia, serif; font-weight: 500; font-size: 2rem; color: var(--maroon); }
+  .chapter__sub{ margin: 4px 0 0; font-style: italic; color: var(--ink-soft); font-size: 0.95rem; }
+
+  /* two columns either side of a centre line */
+  .chapter__items{ position: relative; display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px; margin-top: 28px; }
+  .chapter__items::before{
+    content: ""; position: absolute; top: -12px; bottom: 0; left: 50%; width: 1px;
+    background: linear-gradient(180deg, var(--gold), var(--gold) 85%, transparent);
+  }
+  .tl-col{ display: flex; flex-direction: column; gap: 40px; }
+  .tl-col--right{ padding-top: 150px; }
+  .tl-item{ position: relative; width: 100%; max-width: 280px; }
+  .tl-col--left .tl-item{ margin-left: auto; }
+  .tl-item::before{
+    content: ""; position: absolute; top: 28%; width: 38px; height: 1px; background: var(--gold);
+  }
+  .tl-item::after{
+    content: ""; position: absolute; top: 28%; width: 9px; height: 9px; margin-top: -4px;
+    border-radius: 50%; background: var(--paper); border: 2px solid var(--maroon-light);
+  }
+  .tl-col--left .tl-item::before{ right: -38px; }
+  .tl-col--left .tl-item::after{ right: -43px; }
+  .tl-col--right .tl-item::before{ left: -38px; }
+  .tl-col--right .tl-item::after{ left: -43px; }
+
+  /* phones: one column, line down the left */
+  .chapter__items.is-single{ grid-template-columns: 1fr; padding-left: 34px; }
+  .chapter__items.is-single::before{ left: 9px; }
+  .chapter__items.is-single .tl-col--left .tl-item::before{ left: -25px; right: auto; width: 25px; }
+  .chapter__items.is-single .tl-col--left .tl-item::after{ left: -30px; right: auto; }
+  .chapter__items.is-single .tl-col{ gap: 30px; }
+  .chapter__items.is-single .tl-item{ max-width: 340px; margin-left: 0; }
+  @media (max-width: 720px){
+    .story{ padding: 4px 18px 30px; }
+    .chapter__head{ text-align: left; padding: 0 0 0 34px; }
+    .chapter__head::before{ left: 4px; top: 10px; margin-left: 0; }
+    .chapter__title{ font-size: 1.7rem; }
+  }
+
+
+  /* ============================================
+     STORY REEL: her timeline played as one short film
+     ============================================ */
+  .story-card{ cursor: default; }
+  .story-card__actions{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .story-card__btn{
+    font: inherit; font-size: 0.9rem; cursor: pointer;
+    padding: 6px 15px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background-color .2s ease, color .2s ease;
+  }
+  .story-card__btn--play{ background: rgba(255,255,255,0.94); color: #1E3A57; border: 1px solid transparent; }
+  .story-card__btn--play:hover{ background: #fff; }
+  .story-card__btn--line{ background: rgba(10,16,24,0.25); color: #fff; border: 1px solid rgba(255,255,255,0.55); }
+  .story-card__btn--line:hover{ background: rgba(10,16,24,0.45); }
+  .story-card__btn:focus-visible{ outline: 2px solid #fff; outline-offset: 2px; }
+  .story-card__btn svg{ width: 13px; height: 13px; }
+
+  .story__play{
+    margin-top: 20px; font: inherit; font-size: 1rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 11px 24px; border: 0; border-radius: 999px;
+    color: #fff; background: linear-gradient(135deg, var(--maroon-light), var(--maroon));
+    box-shadow: 0 6px 16px rgba(var(--shadow-rgb), 0.22);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .story__play:hover{ transform: translateY(-1px); box-shadow: 0 9px 20px rgba(var(--shadow-rgb), 0.28); }
+  .story__play:focus-visible{ outline: 2px solid var(--maroon); outline-offset: 3px; }
+  .story__play svg{ width: 14px; height: 14px; }
+  .story__length{ display: block; margin-top: 8px; font-size: 0.85rem; font-style: italic; color: var(--ink-soft); }
+
+  .reel{
+    position: fixed; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    color: #E9EEF4;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 35%, rgba(70,105,145,0.28), transparent 70%),
+      linear-gradient(180deg, #141F2C, #080D14);
+    animation: theater-in .4s ease both;
+  }
+  .reel[hidden]{ display: none; }
+  .reel::before{
+    content: ""; position: absolute; inset: -50%; pointer-events: none; opacity: 0.07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.6 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation: theater-grain 1.2s steps(5) infinite;
+  }
+  .reel__stage{ position: relative; z-index: 1; width: min(980px, 100%); }
+  .reel__screen{
+    position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden;
+    background: #000; border-radius: 4px; box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .reel__screen iframe, .reel__screen > div:first-child{ position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .reel__card{
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    padding: 24px;
+    background: radial-gradient(ellipse 70% 65% at 50% 45%, #1C2A3A, #0A1018);
+    opacity: 0; pointer-events: none; transition: opacity .6s ease;
+  }
+  .reel__card.is-on{ opacity: 1; pointer-events: auto; }
+  .reel__card-title{
+    margin: 0; font-family: 'Playfair Display', Georgia, serif; font-weight: 500;
+    font-size: clamp(2.2rem, 7vw, 4rem); line-height: 1.05; color: #F1F4F8;
+  }
+  .reel__card-sub{ margin: 12px 0 0; font-style: italic; font-size: clamp(1rem, 2.6vw, 1.25rem); color: #A5B2C1; }
+  .reel__card-actions{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 26px; }
+  .reel__card-actions[hidden]{ display: none; }
+  .reel__card-btn{
+    font: inherit; font-size: 0.95rem; cursor: pointer; padding: 9px 20px; border-radius: 999px;
+    color: #0E1620; background: #E3EAF2; border: 1px solid #E3EAF2;
+  }
+  .reel__card-btn--line{ color: #E3EAF2; background: transparent; border-color: rgba(227,234,242,0.45); }
+  .reel__card-btn:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; }
+  .reel__tap{
+    position: absolute; inset: 0; z-index: 3; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font: inherit; font-size: 1.05rem; color: #fff; border: 0;
+    background: rgba(8,13,20,0.55);
+  }
+  .reel__tap[hidden]{ display: none; }
+  .reel__caption{ margin: 16px 2px 0; min-height: 3.2em; }
+  .reel__title{ margin: 0; font-family: 'Playfair Display', Georgia, serif; font-weight: 500; font-size: 1.3rem; color: #F1F4F8; }
+  .reel__meta{ margin: 2px 0 0; font-size: 0.9rem; color: #A5B2C1; }
+  .reel__progress{ display: flex; gap: 3px; margin: 12px 2px 0; }
+  .reel__seg{ flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.15); overflow: hidden; }
+  .reel__seg i{ display: block; height: 100%; width: 0; background: #DCE7F2; }
+  .reel__seg.is-done i{ width: 100%; }
+  .reel__controls{ display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px; }
+  .reel__btn{
+    width: 46px; height: 46px; border-radius: 50%; cursor: pointer; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #F1F4F8; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+    transition: background-color .2s ease;
+  }
+  .reel__btn:hover{ background: rgba(255,255,255,0.16); }
+  .reel__btn:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; }
+  .reel__btn--main{ width: 56px; height: 56px; background: #E3EAF2; color: #0E1620; border-color: #E3EAF2; }
+  .reel__btn--main:hover{ background: #fff; }
+  .reel__btn svg{ width: 20px; height: 20px; }
+  .reel__btn .i-play{ display: none; }
+  .reel.is-paused .reel__btn .i-play{ display: block; }
+  .reel.is-paused .reel__btn .i-pause{ display: none; }
+  .reel__close{
+    position: absolute; top: 16px; right: 16px; z-index: 2;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #F1F4F8; background: rgba(10,16,24,0.6); border: 1px solid rgba(255,255,255,0.22); font-size: 1rem;
+  }
+  .reel__close:focus-visible{ outline: 2px solid #DCE7F2; outline-offset: 2px; }
+  @media (max-width: 600px){
+    .reel{ padding: 56px 12px 16px; align-items: flex-start; }
+    .reel__close{ top: 10px; right: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .reel, .reel::before{ animation: none; }
+    .reel__card{ transition: none; }
+  }
+
   /* ============================================
      ARCHIVE HEADER
      ============================================ */
@@ -1148,7 +1471,7 @@
   }
   .wg-stage{
     flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 8px 20px 24px;
+    padding: 36px 20px 24px;
   }
   .wg-welcome{ width: 100%; max-width: 680px; text-align: center; }
 
@@ -1260,7 +1583,7 @@
 
   @media (max-width: 560px){
     .wg-chrome{ padding: 16px 18px; font-size: 0.76rem; }
-    .wg-stage{ padding: 12px 18px 20px; }
+    .wg-stage{ padding: 28px 18px 20px; }
     .wg-entry{ margin-top: 32px; }
   }
   @media (prefers-reduced-motion: reduce){
@@ -1282,10 +1605,6 @@
   <div class="wg-beam" aria-hidden="true"></div>
 
   <div class="wg-page">
-    <header class="wg-chrome">
-      <span class="wg-wordmark">Draper Productions</span>
-      <span>Est. 2020</span>
-    </header>
 
     <main class="wg-stage">
       <section class="wg-welcome" id="wgWelcome">
@@ -1481,6 +1800,8 @@
 
   <div class="home" id="home"></div>
 
+  <section class="story" id="story" aria-live="polite"></section>
+
   <div class="gallery" id="gallery"></div>
 
   <div class="notice" id="loading">
@@ -1512,8 +1833,14 @@
   <div class="modal">
     <button class="modal__close" id="modalClose" aria-label="Close video">✕</button>
     <div class="modal__frame-wrap" id="modalFrameWrap"></div>
+    <div class="modal__browse" id="modalBrowse" hidden>
+      <button type="button" class="modal__arrow modal__arrow--prev" id="viewPrev" aria-label="Previous video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span class="view-count" id="viewCount"></span>
+      <button type="button" class="modal__arrow modal__arrow--next" id="viewNext" aria-label="Next video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
     <h2 class="modal__title" id="modalTitle"></h2>
     <p class="modal__meta" id="modalMeta"></p>
+    <div class="modal__tags" id="modalTags"></div>
     <p class="modal__caption" id="modalCaption"></p>
     <div class="modal__actions">
       <button type="button" class="modal__action" id="copyLinkBtn">
@@ -1528,6 +1855,34 @@
       <span class="modal__count" id="slideCount"></span>
       <button type="button" class="modal__navbtn" id="slideNext">Next &rsaquo;</button>
       <button type="button" class="modal__navbtn" id="slideShuffle" aria-pressed="false">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div class="reel" id="reel" role="dialog" aria-modal="true" aria-label="Story reel" hidden>
+  <button type="button" class="reel__close" id="reelClose" aria-label="Close the reel">✕</button>
+  <div class="reel__stage">
+    <div class="reel__screen">
+      <div id="reelPlayer"></div>
+      <div class="reel__card" id="reelCard">
+        <p class="reel__card-title" id="reelCardTitle"></p>
+        <p class="reel__card-sub" id="reelCardSub"></p>
+        <div class="reel__card-actions" id="reelEndActions" hidden>
+          <button type="button" class="reel__card-btn" id="reelReplay">Watch again</button>
+          <button type="button" class="reel__card-btn reel__card-btn--line" id="reelToTimeline">See her timeline</button>
+        </div>
+      </div>
+      <button type="button" class="reel__tap" id="reelTap" hidden><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg> Tap to keep watching</button>
+    </div>
+    <div class="reel__caption">
+      <p class="reel__title" id="reelTitle"></p>
+      <p class="reel__meta" id="reelMeta"></p>
+    </div>
+    <div class="reel__progress" id="reelProgress" aria-hidden="true"></div>
+    <div class="reel__controls">
+      <button type="button" class="reel__btn" id="reelPrev" aria-label="Previous clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="reel__btn reel__btn--main" id="reelPause" aria-label="Pause"><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+      <button type="button" class="reel__btn" id="reelNext" aria-label="Next clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
   </div>
 </div>
@@ -1653,6 +2008,15 @@
     return String(raw).split(/[,;]/).map(s => s.trim()).filter(Boolean);
   }
 
+  // "1:23" or "83" (seconds) -> 83. Blank -> 0, the start of the video.
+  function toSeconds(raw){
+    const text = String(raw || '').trim();
+    if (!text) return 0;
+    const parts = text.split(':').map(Number);
+    if (parts.some(n => isNaN(n))) return 0;
+    return parts.reduce((total, n) => total * 60 + n, 0);
+  }
+
   function toIsoDate(raw){
     if (!raw) return "0000-00-00";
     const text = String(raw).trim();
@@ -1688,7 +2052,8 @@
           tags: splitList(pick(row, ["Tags", "tags"])),
           caption: String(pick(row, ["Comments/Description", "Caption", "caption", "Description"])).trim(),
           location: String(pick(row, ["Location", "location"])).trim(),
-          collections: splitList(pick(row, ["Collection", "Collections", "collection"]))
+          collections: splitList(pick(row, ["Collection", "Collections", "collection"])),
+          highlightStart: toSeconds(pick(row, ["Highlight Start", "Clip Start", "Reel Start"]))
         };
       })
       .filter(Boolean);
@@ -1791,6 +2156,9 @@
     pruneSelections();
     renderBrowse();
     renderGallery();
+    const linkedStory = storyFromHash();
+    if (storyKey) renderStory();
+    else if (linkedStory && childFor(linkedStory)) showStory(linkedStory);
     openPendingVideo(false);   // ...or a single video to open
   }
 
@@ -2216,6 +2584,9 @@
 
     const now = new Date();
     const todayText = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+    const growing = storyCardsSection();
+    if (growing) homeEl.appendChild(growing);
 
     const spot = spotlightPick();
     if (spot) homeEl.appendChild(spotlightSection(spot));
@@ -2728,6 +3099,12 @@
   const slideNext = document.getElementById('slideNext');
   const slideShuffle = document.getElementById('slideShuffle');
   const surpriseBtn = document.getElementById('surpriseBtn');
+  const modalTags = document.getElementById('modalTags');
+  const modalBrowse = document.getElementById('modalBrowse');
+  const viewPrev = document.getElementById('viewPrev');
+  const viewNext = document.getElementById('viewNext');
+  const viewCount = document.getElementById('viewCount');
+  let viewer = null;   // { list, index } for previous/next outside a slideshow
 
   const WAVE_SVG = `<svg width="76" height="52" viewBox="0 0 76 52" fill="currentColor" aria-hidden="true"><rect x="2" y="20" width="6" height="12" rx="3"/><rect x="14" y="10" width="6" height="32" rx="3"/><rect x="26" y="2" width="6" height="48" rx="3"/><rect x="38" y="14" width="6" height="24" rx="3"/><rect x="50" y="6" width="6" height="40" rx="3"/><rect x="62" y="18" width="6" height="16" rx="3"/></svg>`;
 
@@ -2750,20 +3127,119 @@
     return `<iframe src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0" title="${esc(video.title)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
   }
 
+  // The line under the title, with each name and place as a link.
+  function metaHtml(v){
+    const ages = agesFor(v);
+    const link = (kind, key, text) => `<button type="button" class="meta-link" data-kind="${kind}" data-key="${esc(key)}">${esc(text)}</button>`;
+    const people = v.people.map(n => {
+      const a = ages.find(x => x.key === lc(n));
+      return link('person', lc(n), n) + (a ? ` <span class="meta-age">(${esc(a.label)})</span>` : '');
+    });
+    const places = v.places.map(p => link('place', lc(p), p));
+    const parts = [esc(formatDate(v.isoDate))];
+    if (people.length) parts.push('With ' + people.join(' &amp; '));
+    if (places.length) parts.push(places.join(', '));
+    return parts.join(' · ');
+  }
+
+  function tagsHtml(v){
+    return v.tags.map(t => `<button type="button" class="tag-chip" data-kind="tag" data-key="${esc(lc(t))}">${esc(t)}</button>`).join('');
+  }
+
+  // The list previous/next steps through: whatever was on screen when the video opened.
+  function currentList(){
+    if (storyKey) return storyList(storyKey);
+    return isHomeView() ? sortVideos(videos) : sortVideos(filteredVideos());
+  }
+
+  function updateBrowseUi(){
+    if (slideshow){
+      modalBrowse.hidden = false;
+      viewCount.textContent = `${slideshow.index + 1} of ${slideshow.list.length}`;
+      viewPrev.disabled = viewNext.disabled = slideshow.list.length < 2;
+      return;
+    }
+    if (!viewer || viewer.list.length < 2){ modalBrowse.hidden = true; return; }
+    modalBrowse.hidden = false;
+    viewCount.textContent = `${viewer.index + 1} of ${viewer.list.length}`;
+    viewPrev.disabled = viewer.index === 0;
+    viewNext.disabled = viewer.index === viewer.list.length - 1;
+  }
+
   function openModal(video, opts){
-    const inShow = !!(opts && opts.slideshow);
+    opts = opts || {};
+    const inShow = !!opts.slideshow;
     currentItem = video;
-    if (!inShow) slideshow = null;
-    modalAgain.style.display = (opts && opts.surprise) ? '' : 'none';
+    if (!inShow){
+      slideshow = null;
+      if (!opts.keepList){
+        const list = opts.list || currentList();
+        const index = list.indexOf(video);
+        viewer = index >= 0 ? { list, index } : { list: [video], index: 0 };
+      }
+    }
+    const wasOpen = modalBackdrop.dataset.open === 'true';
+    modalAgain.style.display = opts.surprise ? '' : 'none';
     modalNav.style.display = inShow ? 'flex' : 'none';
     modalFrameWrap.className = 'modal__frame-wrap' + (video.kind === 'audio' ? ' is-audio' : '');
     modalFrameWrap.innerHTML = embedFor(video);
     modalTitle.textContent = video.title;
-    modalMeta.textContent = metaLine(video);
+    modalMeta.innerHTML = metaHtml(video);
+    modalTags.innerHTML = tagsHtml(video);
     modalCaption.textContent = video.caption;
     modalBackdrop.dataset.open = 'true';
-    modalClose.focus();
+    updateBrowseUi();
+    if (!wasOpen) modalClose.focus();
   }
+
+  function stepView(delta){
+    if (slideshow){ stepSlide(delta); return; }
+    if (!viewer) return;
+    const next = viewer.index + delta;
+    if (next < 0 || next >= viewer.list.length) return;
+    viewer.index = next;
+    openModal(viewer.list[next], { keepList: true });
+  }
+  viewPrev.addEventListener('click', () => stepView(-1));
+  viewNext.addEventListener('click', () => stepView(1));
+
+  // Swipe left or right on a phone (on the title and details; the video
+  // player itself keeps its own touches).
+  (function(){
+    const panel = modalBackdrop.querySelector('.modal');
+    let sx = null, sy = null;
+    panel.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1 || e.target.closest('.modal__frame-wrap')){ sx = null; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    }, { passive: true });
+    panel.addEventListener('touchend', e => {
+      if (sx === null) return;
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) stepView(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  })();
+
+  // Tapping a name, place, or tag shows everything with it.
+  function jumpTo(kind, key){
+    closeModal();
+    if (storyKey) closeStory();
+    activeTags.clear(); activePeople.clear(); activePlaces.clear();
+    tagsMode = peopleMode = placesMode = 'all';
+    dropCollection();
+    searchEl.value = '';
+    if (kind === 'person') activePeople.add(key);
+    else if (kind === 'place') activePlaces.add(key);
+    else activeTags.add(key);
+    openPanel = null;
+    renderBrowse();
+    renderGallery();
+    scrollToToolbar();
+  }
+  modalBackdrop.querySelector('.modal').addEventListener('click', e => {
+    const b = e.target.closest('[data-kind]');
+    if (b) jumpTo(b.dataset.kind, b.dataset.key);
+  });
   // ---------- surprise memory ----------
   // Picks at random from whatever you're currently looking at: the whole
   // archive on the home page, or just the matches if a search or tag is active.
@@ -2961,12 +3437,460 @@
 
   document.getElementById('signOutBtn').addEventListener('click', signOut);
 
+
+  // ---------- growing up: a timeline for each daughter ----------
+  // Every video with her in People, oldest first, in chapters by age.
+  // Opens at #story=name, so a timeline can be shared like any other link.
+
+  const storyEl = document.getElementById('story');
+  const pageFrame = document.querySelector('.page-frame');
+  const singleColumn = window.matchMedia('(max-width: 720px)');
+  let storyKey = null;
+
+  const childFor = key => BIRTH.find(b => b.key === key);
+
+  function storyList(key){
+    return videos
+      .filter(v => v.people.some(p => lc(p) === key))
+      .sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+  }
+
+  function birthdayIso(child, years){
+    const [y, m, d] = child.iso.split('-');
+    return `${+y + years}-${m}-${d}`;
+  }
+
+  function chaptersFor(child){
+    const map = new Map();
+    storyList(child.key).forEach(v => {
+      const months = monthsBetween(child.iso, v.isoDate);
+      const key = months === null ? 'undated' : months < 0 ? 'before' : Math.floor(months / 12);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(v);
+    });
+    const order = k => k === 'before' ? -1 : k === 'undated' ? 999 : k;
+    return Array.from(map.entries()).sort((a, b) => order(a[0]) - order(b[0])).map(([key, items]) => {
+      let title, sub;
+      if (key === 'before'){ title = 'Before she arrived'; sub = ''; }
+      else if (key === 'undated'){ title = 'Undated'; sub = 'Memories without a date yet'; }
+      else if (key === 0){ title = 'Newborn'; sub = `Born ${formatDate(child.iso)}`; }
+      else { title = `Age ${key}`; sub = `Turned ${key} on ${formatDate(birthdayIso(child, key))}`; }
+      return { title, sub, items };
+    });
+  }
+
+  function storyCover(list){
+    const favs = list.filter(isFavorite);
+    const pool = (favs.length ? favs : list).filter(v => v.kind !== 'audio');
+    return pool.length ? pool[pool.length - 1] : null;
+  }
+
+  function storyCardsSection(){
+    const kids = BIRTH.map(b => ({ child: b, list: storyList(b.key) })).filter(k => k.list.length);
+    if (!kids.length) return null;
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    sec.innerHTML = sectionHead('Growing up', '', false);
+    const grid = document.createElement('div');
+    grid.className = 'story-cards';
+    kids.forEach(({ child, list }) => {
+      const cover = storyCover(list);
+      const card = document.createElement('div');
+      card.className = 'story-card';
+      const canPlay = reelPlan(child).clips > 0;
+      card.innerHTML = `
+        ${cover ? `<img src="${thumbnailFor(cover)}" alt="" loading="lazy">` : ''}
+        <div class="story-card__body">
+          <span class="story-card__name">${esc(child.name)}</span>
+          <span class="story-card__sub">Born ${esc(formatDate(child.iso))}, ${list.length} ${list.length === 1 ? 'memory' : 'memories'}</span>
+          <div class="story-card__actions">
+            ${canPlay ? `<button type="button" class="story-card__btn story-card__btn--play" data-act="play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Play her story</button>` : ''}
+            <button type="button" class="story-card__btn story-card__btn--line" data-act="timeline">See her timeline</button>
+          </div>
+        </div>`;
+      const img = card.querySelector('img');
+      if (img) img.addEventListener('error', () => img.remove());
+      card.addEventListener('click', e => {
+        const b = e.target.closest('[data-act]');
+        if (!b) return;
+        if (b.dataset.act === 'play') playReel(child.key, b);
+        else openStory(child.key);
+      });
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    return sec;
+  }
+
+  function renderStory(){
+    const child = childFor(storyKey);
+    if (!child){ closeStory(); return; }
+    const list = storyList(child.key);
+    const plan = reelPlan(child);
+    const single = singleColumn.matches;
+    storyEl.innerHTML = `
+      <button type="button" class="story__back" id="storyBack">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        Back to the archive
+      </button>
+      <header class="story__head">
+        <h2 class="story__name">${esc(child.name)}</h2>
+        <p class="story__sub">Growing up, ${list.length} ${list.length === 1 ? 'memory' : 'memories'} and counting</p>
+        ${plan.clips ? `<button type="button" class="story__play" id="storyPlay"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Play her story</button>
+        <span class="story__length">${plan.clips} clips, about ${plan.minutes} ${plan.minutes === 1 ? 'minute' : 'minutes'}</span>` : ''}
+        <div class="story__rule" aria-hidden="true"></div>
+      </header>`;
+    const playBtn = storyEl.querySelector('#storyPlay');
+    if (playBtn) playBtn.addEventListener('click', () => playReel(child.key, playBtn));
+    storyEl.querySelector('#storyBack').addEventListener('click', () => { closeStory(); window.scrollTo(0, 0); });
+
+    chaptersFor(child).forEach(ch => {
+      const sec = document.createElement('section');
+      sec.className = 'chapter';
+      sec.innerHTML = `<div class="chapter__head">
+          <h3 class="chapter__title">${esc(ch.title)}</h3>
+          ${ch.sub ? `<p class="chapter__sub">${esc(ch.sub)}</p>` : ''}
+        </div>`;
+      const items = document.createElement('div');
+      items.className = 'chapter__items' + (single ? ' is-single' : '');
+      const left = document.createElement('div');
+      left.className = 'tl-col tl-col--left';
+      items.appendChild(left);
+      let right = null;
+      if (!single){
+        right = document.createElement('div');
+        right.className = 'tl-col tl-col--right';
+        items.appendChild(right);
+      }
+      ch.items.forEach((v, i) => {
+        const card = makeCard(v);
+        const fresh = card.cloneNode(true);          // drop the default click, then open within her story
+        fresh.addEventListener('click', () => openModal(v, { list }));
+        const item = document.createElement('div');
+        item.className = 'tl-item';
+        item.appendChild(fresh);
+        attachThumbFallback(item);
+        (single || i % 2 === 0 ? left : right).appendChild(item);
+      });
+      sec.appendChild(items);
+      storyEl.appendChild(sec);
+    });
+  }
+
+  function showStory(key){
+    storyKey = key;
+    pageFrame.classList.add('is-story');
+    hideYearbar();
+    renderStory();
+  }
+
+  function openStory(key){
+    try { history.pushState({ story: key }, '', pageBase() + '#story=' + encodeURIComponent(key)); } catch (e) {}
+    showStory(key);
+    window.scrollTo(0, 0);
+  }
+
+  function closeStory(){
+    storyKey = null;
+    pageFrame.classList.remove('is-story');
+    storyEl.innerHTML = '';
+    if (/^#story=/.test(location.hash)){
+      try { history.pushState(null, '', pageBase()); } catch (e) {}
+    }
+    renderGallery();
+  }
+
+  function storyFromHash(){
+    const m = /^#story=([^&]+)/.exec(location.hash);
+    return m ? lc(decodeURIComponent(m[1])) : null;
+  }
+
+  // Back and forward buttons, and links pasted into an open tab.
+  function syncStoryWithAddress(){
+    if (!videos.length) return;
+    const key = storyFromHash();
+    if (key && childFor(key)){ if (key !== storyKey){ showStory(key); window.scrollTo(0, 0); } }
+    else if (storyKey){ storyKey = null; pageFrame.classList.remove('is-story'); storyEl.innerHTML = ''; renderGallery(); }
+  }
+  window.addEventListener('popstate', syncStoryWithAddress);
+  window.addEventListener('hashchange', syncStoryWithAddress);
+  singleColumn.addEventListener('change', () => { if (storyKey) renderStory(); });
+
+  // ---------- story reel ----------
+  // Her timeline played as one short film: a title card for each age, then a
+  // 12-second clip from each chosen video, one after another. For each age it
+  // takes all her Favorites plus up to three more, spread through that year.
+  // A "Highlight Start" column in the sheet (like 0:45) picks where a clip begins.
+
+  const REEL_CLIP_SECONDS = 12;
+  const REEL_CARD_MS = 2800;
+  const REEL_EXTRAS_PER_AGE = 3;
+
+  const reelEl = document.getElementById('reel');
+  const reelCard = document.getElementById('reelCard');
+  const reelCardTitle = document.getElementById('reelCardTitle');
+  const reelCardSub = document.getElementById('reelCardSub');
+  const reelEndActions = document.getElementById('reelEndActions');
+  const reelTap = document.getElementById('reelTap');
+  const reelTitle = document.getElementById('reelTitle');
+  const reelMeta = document.getElementById('reelMeta');
+  const reelProgress = document.getElementById('reelProgress');
+  const reelPauseBtn = document.getElementById('reelPause');
+  let reel = null;
+
+  const reelable = v => v.source === 'youtube' && v.kind !== 'audio';
+
+  // Evenly spaced picks, so a busy year isn't all from one month.
+  function spreadPick(list, n){
+    if (list.length <= n) return list.slice();
+    if (n === 1) return [list[Math.floor(list.length / 2)]];
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(list[Math.round(i * (list.length - 1) / (n - 1))]);
+    return out;
+  }
+
+  function reelPlan(child){
+    const steps = [{ type: 'card', title: child.name, sub: 'Her story so far' }];
+    let clips = 0;
+    chaptersFor(child).forEach(ch => {
+      const pool = ch.items.filter(reelable);
+      const favs = pool.filter(isFavorite);
+      const extras = spreadPick(pool.filter(v => !isFavorite(v)), REEL_EXTRAS_PER_AGE);
+      const chosen = favs.concat(extras).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+      if (!chosen.length) return;
+      steps.push({ type: 'card', title: ch.title, sub: ch.sub });
+      chosen.forEach(v => { steps.push({ type: 'clip', v, clipNo: clips }); clips++; });
+    });
+    steps.push({ type: 'end', title: child.name, sub: 'To be continued…' });
+    const cards = steps.filter(s => s.type !== 'clip').length;
+    const minutes = Math.max(1, Math.round((clips * REEL_CLIP_SECONDS + cards * REEL_CARD_MS / 1000) / 60));
+    return { child, steps, clips, minutes };
+  }
+
+  // YouTube's player library loads the first time a reel plays.
+  function withYouTube(cb){
+    if (window.YT && window.YT.Player){ cb(); return; }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); cb(); };
+    if (!document.getElementById('ytApi')){
+      const s = document.createElement('script');
+      s.id = 'ytApi';
+      s.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(s);
+    }
+  }
+
+  function playReel(key, opener){
+    const child = childFor(key);
+    if (!child) return;
+    const plan = reelPlan(child);
+    if (!plan.clips) return;
+    closeModal();
+    reel = { plan, i: 0, paused: false, timer: null, poll: null, watchdog: null, player: null, ready: false, opener: opener || null };
+    reelProgress.innerHTML = Array.from({ length: plan.clips }, () => '<span class="reel__seg"><i></i></span>').join('');
+    reelEl.hidden = false;
+    reelEl.classList.remove('is-paused');
+    document.body.style.overflow = 'hidden';
+    reelPauseBtn.focus();
+    withYouTube(() => {
+      if (!reel) return;
+      reel.player = new YT.Player('reelPlayer', {
+        width: '100%', height: '100%',
+        playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1, modestbranding: 1, iv_load_policy: 3, disablekb: 1 },
+        events: {
+          onReady: () => { if (reel){ reel.ready = true; if (currentStep() && currentStep().type === 'clip') loadClip(); } },
+          onStateChange: e => onPlayerState(e.data),
+          onError: () => { if (reel) reelGo(1); }   // removed or private video: skip it
+        }
+      });
+    });
+    runStep();
+  }
+
+  const currentStep = () => reel && reel.plan.steps[reel.i];
+
+  function clearReelTimers(){
+    if (!reel) return;
+    clearTimeout(reel.timer); clearInterval(reel.poll); clearTimeout(reel.watchdog);
+    reel.timer = reel.poll = reel.watchdog = null;
+  }
+
+  function showCard(step, isEnd){
+    reelCardTitle.textContent = step.title;
+    reelCardSub.textContent = step.sub || '';
+    reelEndActions.hidden = !isEnd;
+    reelCard.classList.add('is-on');
+  }
+
+  function updateReelProgress(){
+    const step = currentStep();
+    const segs = reelProgress.children;
+    const upTo = step.type === 'clip' ? step.clipNo : step.type === 'end' ? reel.plan.clips : nextClipNo();
+    Array.from(segs).forEach((seg, n) => {
+      seg.classList.toggle('is-done', n < upTo);
+      seg.firstChild.style.width = n < upTo ? '' : '0';
+    });
+  }
+  function nextClipNo(){
+    for (let j = reel.i; j < reel.plan.steps.length; j++) if (reel.plan.steps[j].type === 'clip') return reel.plan.steps[j].clipNo;
+    return reel.plan.clips;
+  }
+
+  function runStep(){
+    if (!reel) return;
+    clearReelTimers();
+    reelTap.hidden = true;
+    const step = currentStep();
+    updateReelProgress();
+    if (step.type === 'clip'){
+      reelCard.classList.remove('is-on');
+      reelTitle.textContent = step.v.title;
+      reelMeta.textContent = metaLine(step.v);
+      if (reel.ready) loadClip();
+      return;
+    }
+    if (reel.player && reel.ready) try { reel.player.pauseVideo(); } catch (e) {}
+    reelTitle.textContent = '';
+    reelMeta.textContent = '';
+    showCard(step, step.type === 'end');
+    if (step.type === 'end'){
+      reel.paused = false;
+      reelEl.classList.add('is-paused');
+      document.getElementById('reelReplay').focus();
+      return;
+    }
+    if (!reel.paused) reel.timer = setTimeout(() => reelGo(1), REEL_CARD_MS);
+  }
+
+  function loadClip(){
+    const step = currentStep();
+    if (!step || step.type !== 'clip') return;
+    const start = step.v.highlightStart || 0;
+    reel.clipStart = start;
+    reel.player.loadVideoById({ videoId: step.v.videoId, startSeconds: start, endSeconds: start + REEL_CLIP_SECONDS });
+    if (reel.paused) setTimeout(() => { try { reel.player.pauseVideo(); } catch (e) {} }, 300);
+    // Move on after 12 seconds of playing, and fill this clip's progress bar.
+    reel.poll = setInterval(() => {
+      if (!reel || !reel.player || !reel.player.getCurrentTime) return;
+      const t = reel.player.getCurrentTime() - reel.clipStart;
+      const seg = reelProgress.children[step.clipNo];
+      if (seg) seg.firstChild.style.width = Math.max(0, Math.min(100, t / REEL_CLIP_SECONDS * 100)) + '%';
+      if (t >= REEL_CLIP_SECONDS - 0.2) reelGo(1);
+    }, 250);
+    // If the phone wouldn't start it on its own, ask for a tap.
+    reel.watchdog = setTimeout(() => {
+      if (!reel || reel.paused) return;
+      const st = reel.player.getPlayerState ? reel.player.getPlayerState() : 1;
+      if (st !== 1 && st !== 3) reelTap.hidden = false;
+    }, 3500);
+  }
+
+  function onPlayerState(state){
+    if (!reel) return;
+    if (state === 1) reelTap.hidden = true;                       // playing
+    if (state === 0 && currentStep().type === 'clip') reelGo(1);  // ended early (a short video)
+  }
+
+  function reelGo(delta){
+    if (!reel) return;
+    const steps = reel.plan.steps;
+    reel.i = Math.max(0, Math.min(steps.length - 1, reel.i + delta));
+    runStep();
+  }
+
+  // Previous / next jump between clips, skipping the title cards.
+  function reelJump(delta){
+    if (!reel) return;
+    const steps = reel.plan.steps;
+    let j = reel.i + delta;
+    while (j > 0 && j < steps.length - 1 && steps[j].type === 'card') j += delta;
+    if (j < 0) j = 0;
+    if (j > steps.length - 1) j = steps.length - 1;
+    reel.i = j;
+    runStep();
+  }
+
+  function toggleReelPause(){
+    if (!reel) return;
+    const step = currentStep();
+    if (step.type === 'end'){ replayReel(); return; }
+    reel.paused = !reel.paused;
+    reelEl.classList.toggle('is-paused', reel.paused);
+    reelPauseBtn.setAttribute('aria-label', reel.paused ? 'Play' : 'Pause');
+    if (step.type === 'card'){
+      clearTimeout(reel.timer);
+      if (!reel.paused) reel.timer = setTimeout(() => reelGo(1), REEL_CARD_MS);
+    } else if (reel.player && reel.ready){
+      try { reel.paused ? reel.player.pauseVideo() : reel.player.playVideo(); } catch (e) {}
+    }
+  }
+
+  function replayReel(){
+    if (!reel) return;
+    reel.i = 0; reel.paused = false;
+    reelEl.classList.remove('is-paused');
+    reelPauseBtn.setAttribute('aria-label', 'Pause');
+    reelPauseBtn.focus();
+    runStep();
+  }
+
+  function closeReel(){
+    if (!reel) return;
+    clearReelTimers();
+    try { if (reel.player && reel.player.destroy) reel.player.destroy(); } catch (e) {}
+    const opener = reel.opener;
+    reel = null;
+    reelEl.hidden = true;
+    reelCard.classList.remove('is-on');
+    // put back a fresh spot for the next player
+    const screen = reelEl.querySelector('.reel__screen');
+    const old = document.getElementById('reelPlayer');
+    if (old) old.remove();
+    const fresh = document.createElement('div');
+    fresh.id = 'reelPlayer';
+    screen.insertBefore(fresh, screen.firstChild);
+    document.body.style.overflow = '';
+    if (opener && document.body.contains(opener)) opener.focus();
+  }
+
+  document.getElementById('reelClose').addEventListener('click', closeReel);
+  document.getElementById('reelPrev').addEventListener('click', () => reelJump(-1));
+  document.getElementById('reelNext').addEventListener('click', () => reelJump(1));
+  reelPauseBtn.addEventListener('click', toggleReelPause);
+  reelTap.addEventListener('click', () => { reelTap.hidden = true; try { reel.player.playVideo(); } catch (e) {} });
+  document.getElementById('reelReplay').addEventListener('click', replayReel);
+  document.getElementById('reelToTimeline').addEventListener('click', () => {
+    const key = reel && reel.plan.child.key;
+    closeReel();
+    if (key) openStory(key);
+  });
+  document.addEventListener('keydown', e => {
+    if (!reel) return;
+    if (e.key === 'Escape'){ closeReel(); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); reelJump(1); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); reelJump(-1); }
+    else if (e.key === ' ' && e.target === document.body){ e.preventDefault(); toggleReelPause(); }
+  });
+  (function(){
+    let sx = null, sy = null;
+    reelEl.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1){ sx = null; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    }, { passive: true });
+    reelEl.addEventListener('touchend', e => {
+      if (sx === null) return;
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) reelJump(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  })();
+
   // ---------- slideshow ----------
   // Steps through whatever list is on screen (the whole archive from the home
   // page). Manual: Previous/Next buttons or the left/right arrow keys.
 
   function startSlideshow(){
-    const list = isHomeView() ? sortVideos(videos) : sortVideos(filteredVideos());
+    const list = currentList();
     if (!list.length) return;
     slideshow = { list: list.slice(), original: list.slice(), index: 0, shuffled: false };
     showSlide();
@@ -2974,6 +3898,7 @@
 
   function updateSlideUi(){
     slideCount.textContent = `${slideshow.index + 1} of ${slideshow.list.length}`;
+    updateBrowseUi();
     slideShuffle.dataset.active = String(slideshow.shuffled);
     slideShuffle.setAttribute('aria-pressed', String(slideshow.shuffled));
   }
@@ -3016,6 +3941,7 @@
 
   function closeModal(){
     slideshow = null;
+    viewer = null;
     modalNav.style.display = 'none';
     modalBackdrop.dataset.open = 'false';
     modalFrameWrap.innerHTML = '';
@@ -3024,9 +3950,9 @@
   modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape'){ closeModal(); return; }
-    if (slideshow && modalBackdrop.dataset.open === 'true'){
-      if (e.key === 'ArrowRight'){ e.preventDefault(); stepSlide(1); }
-      else if (e.key === 'ArrowLeft'){ e.preventDefault(); stepSlide(-1); }
+    if (modalBackdrop.dataset.open === 'true'){
+      if (e.key === 'ArrowRight'){ e.preventDefault(); stepView(1); }
+      else if (e.key === 'ArrowLeft'){ e.preventDefault(); stepView(-1); }
     }
   });
 
