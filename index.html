@@ -8,18 +8,32 @@
 <script>
   // Welcome gate: decide before anything draws whether to show the code-word page.
   // Someone who entered the code word on this device in the last 30 days goes straight in.
+  // Locked devices also drop any saved code word and video list.
   (function(){
-    var until = 0;
-    try { until = Number(localStorage.getItem('draperArchiveUnlockedUntil')) || 0; } catch (e) {}
-    if (until <= Date.now()) document.documentElement.classList.add('wg-locked');
+    var until = 0, code = '';
+    try {
+      until = Number(localStorage.getItem('draperArchiveUnlockedUntil')) || 0;
+      code = localStorage.getItem('draperArchiveCode') || '';
+    } catch (e) {}
+    if (until <= Date.now() || !code){
+      document.documentElement.classList.add('wg-locked');
+      try {
+        localStorage.removeItem('draperArchiveCode');
+        localStorage.removeItem('draperArchive.videos.v2');
+      } catch (e) {}
+    }
   })();
 </script>
+<link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Draper Archives">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com">
 <link rel="preconnect" href="https://img.youtube.com">
-<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:wght@600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 
   /* ============================================
@@ -1027,17 +1041,40 @@
   }
 
 
-  /* small sign-out link in the top corner of the archive */
+  /* ============================================
+     ARCHIVE HEADER
+     ============================================ */
+  .topbar{
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px clamp(16px, 3vw, 28px) 0;
+  }
+  .topbar-mark{
+    font-family: 'Playfair Display', Georgia, serif; font-style: italic;
+    font-size: 1.05rem; color: var(--ink-soft);
+  }
   .signout{
-    position: absolute; top: 12px; right: 16px; z-index: 2;
     font: inherit; font-size: 0.85rem; color: var(--ink-soft);
-    background: none; border: 0; padding: 6px 8px; cursor: pointer;
+    background: none; border: 0; padding: 6px 8px; margin-right: -8px; cursor: pointer;
     text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
     transition: color .2s ease, text-decoration-color .2s ease;
   }
   .signout:hover{ color: var(--maroon); text-decoration-color: currentColor; }
   .signout:focus-visible{ outline: 2px solid var(--maroon-light); outline-offset: 2px; border-radius: 4px; }
-  @media (max-width: 520px){ .signout{ top: 6px; right: 8px; } }
+  .cover-reel{ display: block; width: 68px; height: 68px; margin: 0 auto 14px; }
+  .cover .cover-title{ margin: 0; font-weight: 400; color: var(--maroon); }
+  .cover-title .family{
+    display: block;
+    font-family: 'Playfair Display', Georgia, serif; font-weight: 500;
+    font-size: clamp(2.3rem, 6vw, 3.6rem); line-height: 1.04; letter-spacing: -0.015em;
+  }
+  .cover-title .archives{
+    display: block; margin-top: 8px;
+    font-family: 'Source Serif 4', Georgia, serif; font-style: italic; font-weight: 400;
+    font-size: clamp(1rem, 2.4vw, 1.25rem); letter-spacing: 0.04em; color: var(--ink-soft);
+  }
+  .cover-rule{ width: 64px; height: 1px; margin: 20px auto 14px; background: var(--gold); }
+  .cover .cover-tagline{ font-size: 0.98rem; }
+  @media (max-width: 520px){ .cover{ padding-top: 28px; } }
 
   /* ============================================
      WELCOME GATE
@@ -1046,145 +1083,192 @@
 
   html:not(.wg-locked) #welcomeGate{ display: none; }
   html.wg-locked body > *:not(#welcomeGate){ display: none !important; }
-  html.wg-unlocking .page-frame{ animation: wg-archive-in .8s ease both; }
+  html.wg-locked body{ overflow: hidden; }
+  html.wg-unlocking .page-frame{ animation: wg-archive-in .9s ease both; }
   @keyframes wg-archive-in{ from{ opacity: 0; } to{ opacity: 1; } }
 
   #welcomeGate{
-    --wg-navy: #24476B;
-    --wg-navy-light: #3E6E95;
-    --wg-mist: #9DB8CE;
-    --wg-ink: #23262B;
-    --wg-ink-soft: #5D6573;
-    --wg-error: #9B2C2C;
-    --wg-film-hole: #E4E9EE;
-    position: relative;
+    --wg-ink: #E9EEF4; --wg-ink-soft: #A5B2C1; --wg-ink-faint: #75849A;
+    --wg-title: #F1F4F8; --wg-script: #BFD3E6; --wg-rule: rgba(191,211,230,0.28);
+    --wg-line: rgba(233,238,244,0.35); --wg-focus: #DCE7F2;
+    --wg-btn-ink: #0E1620; --wg-btn: #E3EAF2; --wg-btn-hover: #FFFFFF; --wg-error: #F2A9A9;
+    position: fixed; inset: 0; z-index: 50;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    color: var(--wg-ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 17px; line-height: 1.6;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 30%, rgba(120,160,205,0.20), transparent 70%),
+      linear-gradient(180deg, #1A2635, #0A1018);
+    background-color: #0A1018;
+    transition: opacity .9s ease;
   }
+  #welcomeGate.is-leaving{ opacity: 0; }
 
-  /* drifting film strips behind everything */
-  .wg-strips{ position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .wg-strip{
-    position: absolute; left: -20%; width: 140%; height: 96px;
-    opacity: 0.16; background-repeat: repeat-x; background-size: 480px 96px;
+  /* film grain, gently alive */
+  .wg-grain{
+    position: fixed; inset: -50%; pointer-events: none; opacity: 0.08;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.6 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation: wg-grain 1.2s steps(5) infinite;
   }
-  .wg-strip--top{ top: 9%; transform: rotate(-5deg); animation: wg-roll-left 60s linear infinite; }
-  .wg-strip--bottom{ bottom: 8%; transform: rotate(4deg); animation: wg-roll-right 72s linear infinite; }
-  @keyframes wg-roll-left{ from{ background-position: 0 0; } to{ background-position: -480px 0; } }
-  @keyframes wg-roll-right{ from{ background-position: 0 0; } to{ background-position: 480px 0; } }
+  @keyframes wg-grain{
+    0%{ transform: translate(0,0); } 20%{ transform: translate(-3%,2%); } 40%{ transform: translate(2%,-3%); }
+    60%{ transform: translate(-2%,-1%); } 80%{ transform: translate(3%,3%); } 100%{ transform: translate(0,0); }
+  }
+  /* lens vignette */
+  .wg-vignette{
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 85% 75% at 50% 42%, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+  /* a soft projector beam from the upper left */
+  .wg-beam{
+    position: fixed; pointer-events: none;
+    top: -45vh; left: 4vw; width: 34vw; height: 170vh;
+    transform: rotate(-38deg); transform-origin: top center;
+    background: linear-gradient(90deg, transparent, rgba(200,220,245,0.07) 50%, transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent 75%);
+            mask-image: linear-gradient(180deg, #000 10%, transparent 75%);
+    opacity: 0; animation: wg-beam-on 2.4s ease 0.5s forwards;
+  }
+  @keyframes wg-beam-on{ to{ opacity: 1; } }
 
-  .wg-frame{
+  .wg-page{
     position: relative; z-index: 1;
-    margin: 18px;
-    min-height: calc(100vh - 36px);
-    border: 6px double var(--wg-mist);
-    background: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.12));
-    box-shadow: 0 10px 30px rgba(36,71,107,0.12);
-    display: flex; align-items: center; justify-content: center;
-    padding: 40px 20px 48px;
+    min-height: 100%; display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  .wg-welcome{
-    width: 100%; max-width: 640px; text-align: center;
-    transition: opacity .7s ease, transform .7s ease;
+  .wg-chrome{
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 22px clamp(18px, 4vw, 44px);
+    font-size: 0.82rem; color: var(--wg-ink-faint); letter-spacing: 0.01em;
+    opacity: 0; animation: wg-fade 1.2s ease 1.8s forwards;
   }
-  .wg-welcome.is-leaving{ opacity: 0; transform: scale(0.98) translateY(-8px); }
+  .wg-wordmark{
+    font-family: 'Playfair Display', Georgia, serif; font-style: italic;
+    font-size: 1.05rem; color: var(--wg-ink-soft);
+  }
+  .wg-stage{
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 8px 20px 24px;
+  }
+  .wg-welcome{ width: 100%; max-width: 680px; text-align: center; }
 
-  /* film reel with loose film: the reel is drawn in SVG, the film on a canvas behind it */
-  .wg-mark{ position: relative; width: min(580px, 100%); aspect-ratio: 620 / 228; margin: 0 auto 10px; opacity: .86; }
+  /* reel, film, and a pool of light beneath them */
+  .wg-mark-wrap{ position: relative; width: min(480px, 100%); margin: 0 auto 2px; }
+  .wg-pool{
+    position: absolute; left: 50%; bottom: 2%; width: 62%; height: 26%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(170,200,230,0.16), transparent 70%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .wg-mark{ position: relative; width: 100%; aspect-ratio: 620 / 228; opacity: .96; }
   .wg-mark canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
   .wg-mark .wg-reel{ position: absolute; left: 33.871%; top: 0; width: 32.2581%; height: auto; overflow: visible; }
   /* only the metal and film turn; the light falling on the reel stays put */
   .wg-reel-spin{ transform-box: view-box; transform-origin: 100px 100px; animation: wg-spin 15s linear infinite reverse; }
   @keyframes wg-spin{ to{ transform: rotate(360deg); } }
 
-  .wg-title{
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 700;
-    font-size: clamp(2.2rem, 7vw, 3.9rem);
-    line-height: 1.08;
-    letter-spacing: -0.01em;
-    color: var(--wg-navy);
-    margin: 0;
-    text-wrap: balance;
-    opacity: 0; animation: wg-rise .9s ease .1s forwards;
+  /* title card */
+  .wg-title{ margin: 18px 0 0; font-weight: 400; }
+  .wg-title .family{
+    display: block;
+    font-family: 'Playfair Display', Georgia, serif; font-weight: 500;
+    font-size: clamp(2.5rem, 7.5vw, 4.3rem); line-height: 1.02; letter-spacing: -0.015em;
+    color: var(--wg-title);
   }
-  @keyframes wg-rise{ from{ opacity: 0; transform: translateY(10px); } to{ opacity: 1; transform: none; } }
-
-  .wg-ornament{ display: flex; align-items: center; gap: 12px; max-width: 280px; margin: 22px auto 6px; }
-  .wg-ornament .wg-line{ flex: 1; height: 1px; }
-  .wg-ornament .wg-line.left{ background: linear-gradient(to right, transparent, var(--wg-mist)); }
-  .wg-ornament .wg-line.right{ background: linear-gradient(to left, transparent, var(--wg-mist)); }
-  .wg-ornament .wg-diamond{ width: 7px; height: 7px; transform: rotate(45deg); background: var(--wg-navy-light); }
+  .wg-title .archives{
+    display: block; margin-top: 10px;
+    font-style: italic; font-size: clamp(1.05rem, 2.6vw, 1.35rem); letter-spacing: 0.04em;
+    color: var(--wg-ink-soft);
+  }
+  .wg-rule{ width: 64px; height: 1px; margin: 22px auto 16px; background: var(--wg-rule); }
 
   /* the handwritten quote */
   .wg-quote{
-    margin: 18px auto 6px;
+    margin: 0 auto;
     font-family: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
-    font-weight: 400;
-    font-size: clamp(1.9rem, 5.6vw, 2.75rem);
-    line-height: 1.35;
-    color: var(--wg-navy);
-    min-height: 3.6em;
+    font-size: clamp(1.7rem, 4.6vw, 2.25rem); line-height: 1.36;
+    color: var(--wg-script);
+    min-height: 3.5em;
   }
   .wg-quote .wg-ln{
-    display: inline-block;
-    padding: 0 .25em;           /* room for swashes */
+    display: inline-block; padding: 0 .25em;
     -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
             mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
-    -webkit-mask-size: 220% 100%;  mask-size: 220% 100%;
+    -webkit-mask-size: 220% 100%; mask-size: 220% 100%;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-position: 100% 0;  mask-position: 100% 0;
+    -webkit-mask-position: 100% 0; mask-position: 100% 0;
   }
   .wg-quote .wg-ln.write{ animation: wg-write var(--dur, 2s) cubic-bezier(.45,.05,.55,.95) var(--delay, 0s) forwards; }
   @keyframes wg-write{ to{ -webkit-mask-position: 0 0; mask-position: 0 0; } }
-  .wg-signature{
-    font-family: 'Pinyon Script', 'Snell Roundhand', cursive;
-    font-size: 1.45rem; color: var(--wg-ink-soft);
-    margin: 4px 0 0; opacity: 0;
-  }
-  .wg-signature.show{ animation: wg-fade .9s ease forwards; }
+  .wg-signature{ margin: 6px 0 0; font-style: italic; font-size: 0.95rem; color: var(--wg-ink-faint); opacity: 0; }
+  .wg-signature.show{ animation: wg-fade 1s ease forwards; }
   @keyframes wg-fade{ to{ opacity: 1; } }
 
-  /* the code word */
-  .wg-form{ margin: 30px auto 0; max-width: 420px; opacity: 0; animation: wg-rise .8s ease 1.4s forwards; }
-  .wg-form h2{
-    font-family: 'Playfair Display', Georgia, serif; font-weight: 600;
-    font-size: 1.5rem; color: var(--wg-ink); margin: 0 0 4px;
+  /* entry */
+  .wg-entry{ margin: 26px auto 0; max-width: 380px; }
+  .wg-entry-intro{ margin: 0 0 18px; color: var(--wg-ink-soft); font-size: 1rem; }
+  .wg-entry label{ display: block; margin-bottom: 4px; font-size: 0.85rem; font-style: italic; color: var(--wg-ink-faint); }
+  .wg-input{ position: relative; }
+  .wg-input input{
+    display: block; width: 100%;
+    font: inherit; font-size: 1.15rem; text-align: center; letter-spacing: 0.08em;
+    padding: 6px 44px 8px; color: var(--wg-ink);
+    background: transparent; border: 0; border-bottom: 1px solid var(--wg-line); border-radius: 0;
+    transition: border-color .25s ease;
   }
-  .wg-form p{ margin: 0 0 16px; color: var(--wg-ink-soft); }
-  .wg-field{ display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  .wg-field label{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .wg-field input{
-    flex: 1 1 200px; min-width: 0;
-    font: inherit; font-size: 1.05rem; text-align: center; letter-spacing: .04em;
-    padding: 12px 16px;
-    border: 1px solid var(--wg-mist); border-radius: 999px;
-    background: rgba(255,255,255,0.85); color: var(--wg-ink);
+  .wg-input input:focus{ outline: none; border-bottom-color: var(--wg-focus); box-shadow: 0 1px 0 0 var(--wg-focus); }
+  .wg-reveal{
+    position: absolute; right: 0; bottom: 4px;
+    width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: none; color: var(--wg-ink-faint); cursor: pointer;
+    transition: color .2s ease;
   }
-  .wg-field input:focus-visible{ outline: 3px solid var(--wg-navy-light); outline-offset: 2px; }
-  .wg-field button{
-    font: inherit; font-weight: 600; font-size: 1rem;
-    padding: 12px 22px; border: 0; border-radius: 999px; cursor: pointer;
-    color: #fff; background: linear-gradient(135deg, #3E6E95, #24476B);
-    box-shadow: 0 6px 14px rgba(36,71,107,.22);
+  .wg-reveal:hover{ color: var(--wg-ink); }
+  .wg-reveal:focus-visible{ outline: 2px solid var(--wg-focus); outline-offset: 0; }
+  .wg-reveal svg{ width: 20px; height: 20px; }
+  .wg-reveal .wg-eye-off{ display: none; }
+  .wg-reveal[aria-pressed="true"] .wg-eye{ display: none; }
+  .wg-reveal[aria-pressed="true"] .wg-eye-off{ display: block; }
+  .wg-entry button[type="submit"]{
+    margin-top: 20px;
+    font: inherit; font-size: 0.98rem; letter-spacing: 0.02em;
+    padding: 12px 30px; border: 0; border-radius: 999px; cursor: pointer;
+    color: var(--wg-btn-ink); background: var(--wg-btn);
+    transition: background-color .25s ease, transform .25s ease, opacity .25s ease;
   }
-  .wg-field button:hover{ filter: brightness(1.08); }
-  .wg-field button:focus-visible{ outline: 3px solid var(--wg-navy-light); outline-offset: 3px; }
-  .wg-message{ min-height: 1.6em; margin-top: 12px; font-size: .95rem; color: var(--wg-error); }
+  .wg-entry button[type="submit"]:hover{ background: var(--wg-btn-hover); }
+  .wg-entry button[type="submit"]:active{ transform: translateY(1px); }
+  .wg-entry button[type="submit"]:disabled{ opacity: .7; cursor: progress; }
+  .wg-entry button[type="submit"]:focus-visible{ outline: 2px solid var(--wg-focus); outline-offset: 3px; }
+  .wg-message{ min-height: 1.6em; margin-top: 10px; font-size: 0.92rem; color: var(--wg-error); }
   .wg-shake{ animation: wg-shake .4s ease; }
-  @keyframes wg-shake{
-    20%{ transform: translateX(-7px); } 40%{ transform: translateX(6px); }
-    60%{ transform: translateX(-4px); } 80%{ transform: translateX(2px); }
-  }
+  @keyframes wg-shake{ 20%{ transform: translateX(-7px); } 40%{ transform: translateX(6px); } 60%{ transform: translateX(-4px); } 80%{ transform: translateX(2px); } }
 
-  @media (max-width: 520px){
-    .wg-frame{ margin: 10px; min-height: calc(100vh - 20px); padding: 32px 14px 36px; border-width: 5px; }
-    .wg-strip{ height: 72px; background-size: 360px 72px; }
+  /* opening sequence: a projector warming up, then each piece in turn */
+  .wg-curtain{
+    position: fixed; inset: 0; z-index: 10; background: #0A1018; pointer-events: none;
+    animation: wg-projector 1.3s ease-out forwards;
   }
+  @keyframes wg-projector{
+    0%{ opacity: 1; } 18%{ opacity: .72; } 26%{ opacity: .95; } 40%{ opacity: .45; }
+    48%{ opacity: .7; } 100%{ opacity: 0; visibility: hidden; }
+  }
+  .wg-in{ opacity: 0; animation: wg-rise 1.1s cubic-bezier(.2,.7,.2,1) forwards; }
+  .wg-in-1{ animation-delay: .9s; } .wg-in-2{ animation-delay: 1.25s; } .wg-in-3{ animation-delay: 1.5s; } .wg-in-4{ animation-delay: 2.1s; }
+  @keyframes wg-rise{ from{ opacity: 0; transform: translateY(12px); } to{ opacity: 1; transform: none; } }
 
+  @media (max-width: 560px){
+    .wg-chrome{ padding: 16px 18px; font-size: 0.76rem; }
+    .wg-stage{ padding: 12px 18px 20px; }
+    .wg-entry{ margin-top: 32px; }
+  }
   @media (prefers-reduced-motion: reduce){
-    .wg-strip, .wg-reel-spin{ animation: none !important; }
-    .wg-title, .wg-form{ animation: none !important; opacity: 1 !important; }
+    .wg-grain, .wg-reel-spin, .wg-curtain, .wg-beam{ animation: none !important; }
+    .wg-curtain{ display: none; } .wg-beam{ opacity: 1; }
+    .wg-in, .wg-chrome, .wg-signature{ animation: none !important; opacity: 1 !important; }
     .wg-quote .wg-ln{ -webkit-mask-image: none; mask-image: none; animation: none !important; }
-    .wg-signature{ opacity: 1; animation: none !important; }
+    #welcomeGate{ transition: none; }
     html.wg-unlocking .page-frame{ animation: none; }
   }
 </style>
@@ -1192,105 +1276,182 @@
 <body>
 
 <div id="welcomeGate">
-  <div class="wg-strips" aria-hidden="true">
-    <div class="wg-strip wg-strip--top"></div>
-    <div class="wg-strip wg-strip--bottom"></div>
-  </div>
+  <div class="wg-curtain" aria-hidden="true"></div>
+  <div class="wg-grain" aria-hidden="true"></div>
+  <div class="wg-vignette" aria-hidden="true"></div>
+  <div class="wg-beam" aria-hidden="true"></div>
 
-  <main class="wg-frame">
-    <section class="wg-welcome" id="wgWelcome">
-  <div class="wg-mark" aria-hidden="true">
-        <canvas id="wgFilm"></canvas>
-        <svg class="wg-reel" viewBox="0 0 200 200" aria-hidden="true">
-          <defs>
-            <mask id="reelWindows" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
-              <rect width="200" height="200" fill="#fff"/>
-              <g fill="#000"><circle cx="100.0" cy="45.0" r="22"/><circle cx="147.63" cy="72.5" r="22"/><circle cx="147.63" cy="127.5" r="22"/><circle cx="100.0" cy="155.0" r="22"/><circle cx="52.37" cy="127.5" r="22"/><circle cx="52.37" cy="72.5" r="22"/></g>
-            </mask>
-            <linearGradient id="reelChrome" x1=".12" y1="0" x2=".88" y2="1">
-              <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
-              <stop offset=".28" stop-color="#fff" stop-opacity=".18"/>
-              <stop offset=".46" stop-color="#0d1824" stop-opacity=".16"/>
-              <stop offset=".56" stop-color="#fff" stop-opacity=".32"/>
-              <stop offset=".72" stop-color="#0d1824" stop-opacity=".06"/>
-              <stop offset="1" stop-color="#0d1824" stop-opacity=".38"/>
-            </linearGradient>
-            <radialGradient id="reelGlint" cx=".3" cy=".22" r=".32">
-              <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
-              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="reelFilm" cx=".5" cy=".5" r=".5">
-              <stop offset=".35" stop-color="#3a3b3e"/>
-              <stop offset=".85" stop-color="#1b1c1f"/>
-              <stop offset="1" stop-color="#2c2d31"/>
-            </radialGradient>
-            <mask id="reelFace" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
-              <rect width="200" height="200" fill="#fff"/>
-              <g class="wg-reel-spin" fill="#000"><circle cx="100.0" cy="45.0" r="21"/><circle cx="147.63" cy="72.5" r="21"/><circle cx="147.63" cy="127.5" r="21"/><circle cx="100.0" cy="155.0" r="21"/><circle cx="52.37" cy="127.5" r="21"/><circle cx="52.37" cy="72.5" r="21"/></g>
-            </mask>
-            <filter id="reelShadow" x="-20%" y="-20%" width="140%" height="150%">
-              <feDropShadow dx="2" dy="6" stdDeviation="5" flood-color="#1d3550" flood-opacity=".32"/>
-            </filter>
-          </defs>
-          <g filter="url(#reelShadow)">
-            <g class="wg-reel-spin">
-              <circle cx="100" cy="100" r="93" fill="#4f5964"/>
-              <circle cx="100" cy="100" r="82" fill="url(#reelFilm)"/>
-              <g fill="none" stroke="#55575c" stroke-width=".7" opacity=".9"><circle cx="100" cy="100" r="36"/><circle cx="100" cy="100" r="40"/><circle cx="100" cy="100" r="43.5"/><circle cx="100" cy="100" r="47"/><circle cx="100" cy="100" r="51"/><circle cx="100" cy="100" r="54.5"/><circle cx="100" cy="100" r="58"/><circle cx="100" cy="100" r="61.5"/><circle cx="100" cy="100" r="65"/><circle cx="100" cy="100" r="68.5"/><circle cx="100" cy="100" r="72"/><circle cx="100" cy="100" r="75.5"/><circle cx="100" cy="100" r="79"/></g>
-              <circle cx="100" cy="100" r="31" fill="#7f8a96"/>
-              <circle cx="100" cy="100" r="94" fill="#C9D1D9" mask="url(#reelWindows)"/>
-              <g fill="none">
-                <circle cx="100.0" cy="45.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="45.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="45.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="100.0" cy="155.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="155.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="155.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/>
+  <div class="wg-page">
+    <header class="wg-chrome">
+      <span class="wg-wordmark">Draper Productions</span>
+      <span>Est. 2020</span>
+    </header>
+
+    <main class="wg-stage">
+      <section class="wg-welcome" id="wgWelcome">
+        <div class="wg-mark-wrap wg-in wg-in-1" aria-hidden="true">
+          <div class="wg-pool"></div>
+    <div class="wg-mark" aria-hidden="true">
+          <canvas id="wgFilm"></canvas>
+          <svg class="wg-reel" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <mask id="reelWindows" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+                <rect width="200" height="200" fill="#fff"/>
+                <g fill="#000"><circle cx="100.0" cy="45.0" r="22"/><circle cx="147.63" cy="72.5" r="22"/><circle cx="147.63" cy="127.5" r="22"/><circle cx="100.0" cy="155.0" r="22"/><circle cx="52.37" cy="127.5" r="22"/><circle cx="52.37" cy="72.5" r="22"/></g>
+              </mask>
+              <linearGradient id="reelChrome" x1=".12" y1="0" x2=".88" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
+                <stop offset=".28" stop-color="#fff" stop-opacity=".18"/>
+                <stop offset=".46" stop-color="#0d1824" stop-opacity=".16"/>
+                <stop offset=".56" stop-color="#fff" stop-opacity=".32"/>
+                <stop offset=".72" stop-color="#0d1824" stop-opacity=".06"/>
+                <stop offset="1" stop-color="#0d1824" stop-opacity=".38"/>
+              </linearGradient>
+              <radialGradient id="reelGlint" cx=".3" cy=".22" r=".32">
+                <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="reelFilm" cx=".5" cy=".5" r=".5">
+                <stop offset=".35" stop-color="#3a3b3e"/>
+                <stop offset=".85" stop-color="#1b1c1f"/>
+                <stop offset="1" stop-color="#2c2d31"/>
+              </radialGradient>
+              <mask id="reelFace" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+                <rect width="200" height="200" fill="#fff"/>
+                <g class="wg-reel-spin" fill="#000"><circle cx="100.0" cy="45.0" r="21"/><circle cx="147.63" cy="72.5" r="21"/><circle cx="147.63" cy="127.5" r="21"/><circle cx="100.0" cy="155.0" r="21"/><circle cx="52.37" cy="127.5" r="21"/><circle cx="52.37" cy="72.5" r="21"/></g>
+              </mask>
+              <filter id="reelShadow" x="-20%" y="-20%" width="140%" height="150%">
+                <feDropShadow dx="2" dy="6" stdDeviation="5" flood-color="#1d3550" flood-opacity=".32"/>
+              </filter>
+            </defs>
+            <g filter="url(#reelShadow)">
+              <g class="wg-reel-spin">
+                <circle cx="100" cy="100" r="93" fill="#4f5964"/>
+                <circle cx="100" cy="100" r="82" fill="url(#reelFilm)"/>
+                <g fill="none" stroke="#55575c" stroke-width=".7" opacity=".9"><circle cx="100" cy="100" r="36"/><circle cx="100" cy="100" r="40"/><circle cx="100" cy="100" r="43.5"/><circle cx="100" cy="100" r="47"/><circle cx="100" cy="100" r="51"/><circle cx="100" cy="100" r="54.5"/><circle cx="100" cy="100" r="58"/><circle cx="100" cy="100" r="61.5"/><circle cx="100" cy="100" r="65"/><circle cx="100" cy="100" r="68.5"/><circle cx="100" cy="100" r="72"/><circle cx="100" cy="100" r="75.5"/><circle cx="100" cy="100" r="79"/></g>
+                <circle cx="100" cy="100" r="31" fill="#7f8a96"/>
+                <circle cx="100" cy="100" r="94" fill="#C9D1D9" mask="url(#reelWindows)"/>
+                <g fill="none">
+                  <circle cx="100.0" cy="45.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="45.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="45.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="100.0" cy="155.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="155.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="155.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/>
+                </g>
+                <circle cx="100" cy="100" r="92.6" fill="none" stroke="#6E7A86" stroke-width="1.4"/>
+                <circle cx="100" cy="100" r="89.5" fill="none" stroke="#EEF2F5" stroke-width="3"/>
+                <circle cx="100" cy="100" r="86.4" fill="none" stroke="#8C97A3" stroke-width="1"/>
+                <circle cx="100" cy="100" r="27" fill="#D6DDE4" stroke="#83909C" stroke-width="1.4"/>
+                <circle cx="100" cy="100" r="22.5" fill="none" stroke="#F4F7F9" stroke-width="1.3"/>
+                <g fill="#262c33"><circle cx="100" cy="100" r="4.2"/><circle cx="112.5" cy="100.0" r="3.4"/><circle cx="106.25" cy="110.83" r="3.4"/><circle cx="93.75" cy="110.83" r="3.4"/><circle cx="87.5" cy="100.0" r="3.4"/><circle cx="93.75" cy="89.17" r="3.4"/><circle cx="106.25" cy="89.17" r="3.4"/></g>
               </g>
-              <circle cx="100" cy="100" r="92.6" fill="none" stroke="#6E7A86" stroke-width="1.4"/>
-              <circle cx="100" cy="100" r="89.5" fill="none" stroke="#EEF2F5" stroke-width="3"/>
-              <circle cx="100" cy="100" r="86.4" fill="none" stroke="#8C97A3" stroke-width="1"/>
-              <circle cx="100" cy="100" r="27" fill="#D6DDE4" stroke="#83909C" stroke-width="1.4"/>
-              <circle cx="100" cy="100" r="22.5" fill="none" stroke="#F4F7F9" stroke-width="1.3"/>
-              <g fill="#262c33"><circle cx="100" cy="100" r="4.2"/><circle cx="112.5" cy="100.0" r="3.4"/><circle cx="106.25" cy="110.83" r="3.4"/><circle cx="93.75" cy="110.83" r="3.4"/><circle cx="87.5" cy="100.0" r="3.4"/><circle cx="93.75" cy="89.17" r="3.4"/><circle cx="106.25" cy="89.17" r="3.4"/></g>
+              <circle cx="100" cy="100" r="94" fill="url(#reelChrome)" mask="url(#reelFace)"/>
+              <circle cx="100" cy="100" r="94" fill="url(#reelChrome)" opacity=".18"/>
+              <circle cx="100" cy="100" r="94" fill="url(#reelGlint)" mask="url(#reelFace)"/>
             </g>
-            <circle cx="100" cy="100" r="94" fill="url(#reelChrome)" mask="url(#reelFace)"/>
-            <circle cx="100" cy="100" r="94" fill="url(#reelChrome)" opacity=".18"/>
-            <circle cx="100" cy="100" r="94" fill="url(#reelGlint)" mask="url(#reelFace)"/>
-          </g>
-        </svg>
-      </div>
-
-      <h1 class="wg-title">The Draper Family Video Archives</h1>
-      <div class="wg-ornament" aria-hidden="true"><span class="wg-line left"></span><span class="wg-diamond"></span><span class="wg-line right"></span></div>
-
-      <blockquote class="wg-quote" id="wgQuote" aria-label="These are our moments, made with love, shared with joy, and cherished forever.">
-        <span class="wg-ln" aria-hidden="true">These are our moments, made with love,</span><br>
-        <span class="wg-ln" aria-hidden="true">shared with joy,</span><br>
-        <span class="wg-ln" aria-hidden="true">and cherished forever.</span>
-      </blockquote>
-      <p class="wg-signature" id="wgSignature">with love, the Drapers</p>
-
-      <form class="wg-form" id="wgForm" autocomplete="off" novalidate>
-        <h2>Welcome, family</h2>
-        <p>Please enter the family code word to open the archives.</p>
-        <div class="wg-field" id="wgField">
-          <label for="wgCode">Family code word</label>
-          <input id="wgCode" name="code" type="password" placeholder="Family code word"
-                 autocapitalize="none" autocorrect="off" spellcheck="false" required>
-          <button type="submit">Open the archives</button>
+          </svg>
         </div>
-        <div class="wg-message" id="wgMessage" role="alert" aria-live="polite"></div>
-      </form>
-    </section>
-  </main>
-</div>
+        </div>
 
+        <h1 class="wg-title wg-in wg-in-2">
+          <span class="family">The Draper Family</span>
+          <span class="archives">Video Archives</span>
+        </h1>
+
+        <div class="wg-rule wg-in wg-in-3" aria-hidden="true"></div>
+
+        <blockquote class="wg-quote" aria-label="These are our moments, made with love, shared with joy, and cherished forever.">
+          <span class="wg-ln" aria-hidden="true">These are our moments, made with love,</span><br>
+          <span class="wg-ln" aria-hidden="true">shared with joy,</span><br>
+          <span class="wg-ln" aria-hidden="true">and cherished forever.</span>
+        </blockquote>
+        <p class="wg-signature" id="wgSignature">with love, the Drapers</p>
+
+        <form class="wg-entry wg-in wg-in-4" id="wgForm" autocomplete="off" novalidate>
+          <p class="wg-entry-intro">Welcome, family. Enter the code word to open the archives.</p>
+          <label for="wgCode">Family code word</label>
+          <div class="wg-input">
+            <input id="wgCode" name="code" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+            <button type="button" class="wg-reveal" id="wgReveal" aria-label="Show code word" aria-pressed="false">
+              <svg class="wg-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="wg-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <button type="submit" id="wgSubmit">Open the archives</button>
+          <div class="wg-message" id="wgMessage" role="alert" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="wg-chrome">
+      <span>A private family archive</span>
+    </footer>
+  </div>
+</div>
 
 <div class="page-frame">
 
-  <button type="button" class="signout" id="signOutBtn">Sign out</button>
+  <header class="topbar">
+    <span class="topbar-mark">Draper Productions</span>
+    <button type="button" class="signout" id="signOutBtn">Sign out</button>
+  </header>
 
   <div class="cover">
-    <div class="crest">D</div>
-    <h1>The Draper Family Video Archives</h1>
-    <p>The moments we cherish most, frame by frame.</p>
-    <div class="ornament"><span class="line left"></span><span class="diamond"></span><span class="line right"></span></div>
+    <svg class="cover-reel" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <mask id="cvReelWindows" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+                <rect width="200" height="200" fill="#fff"/>
+                <g fill="#000"><circle cx="100.0" cy="45.0" r="22"/><circle cx="147.63" cy="72.5" r="22"/><circle cx="147.63" cy="127.5" r="22"/><circle cx="100.0" cy="155.0" r="22"/><circle cx="52.37" cy="127.5" r="22"/><circle cx="52.37" cy="72.5" r="22"/></g>
+              </mask>
+              <linearGradient id="cvReelChrome" x1=".12" y1="0" x2=".88" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
+                <stop offset=".28" stop-color="#fff" stop-opacity=".18"/>
+                <stop offset=".46" stop-color="#0d1824" stop-opacity=".16"/>
+                <stop offset=".56" stop-color="#fff" stop-opacity=".32"/>
+                <stop offset=".72" stop-color="#0d1824" stop-opacity=".06"/>
+                <stop offset="1" stop-color="#0d1824" stop-opacity=".38"/>
+              </linearGradient>
+              <radialGradient id="cvReelGlint" cx=".3" cy=".22" r=".32">
+                <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="cvReelFilm" cx=".5" cy=".5" r=".5">
+                <stop offset=".35" stop-color="#3a3b3e"/>
+                <stop offset=".85" stop-color="#1b1c1f"/>
+                <stop offset="1" stop-color="#2c2d31"/>
+              </radialGradient>
+              <mask id="cvReelFace" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+                <rect width="200" height="200" fill="#fff"/>
+                <g fill="#000"><circle cx="100.0" cy="45.0" r="21"/><circle cx="147.63" cy="72.5" r="21"/><circle cx="147.63" cy="127.5" r="21"/><circle cx="100.0" cy="155.0" r="21"/><circle cx="52.37" cy="127.5" r="21"/><circle cx="52.37" cy="72.5" r="21"/></g>
+              </mask>
+              <filter id="cvReelShadow" x="-20%" y="-20%" width="140%" height="150%">
+                <feDropShadow dx="2" dy="6" stdDeviation="5" flood-color="#1d3550" flood-opacity=".32"/>
+              </filter>
+            </defs>
+            <g filter="url(#cvReelShadow)">
+              <g>
+                <circle cx="100" cy="100" r="93" fill="#4f5964"/>
+                <circle cx="100" cy="100" r="82" fill="url(#cvReelFilm)"/>
+                <g fill="none" stroke="#55575c" stroke-width=".7" opacity=".9"><circle cx="100" cy="100" r="36"/><circle cx="100" cy="100" r="40"/><circle cx="100" cy="100" r="43.5"/><circle cx="100" cy="100" r="47"/><circle cx="100" cy="100" r="51"/><circle cx="100" cy="100" r="54.5"/><circle cx="100" cy="100" r="58"/><circle cx="100" cy="100" r="61.5"/><circle cx="100" cy="100" r="65"/><circle cx="100" cy="100" r="68.5"/><circle cx="100" cy="100" r="72"/><circle cx="100" cy="100" r="75.5"/><circle cx="100" cy="100" r="79"/></g>
+                <circle cx="100" cy="100" r="31" fill="#7f8a96"/>
+                <circle cx="100" cy="100" r="94" fill="#C9D1D9" mask="url(#cvReelWindows)"/>
+                <g fill="none">
+                  <circle cx="100.0" cy="45.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="45.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="45.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="147.63" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="147.63" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="147.63" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="100.0" cy="155.0" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="100.0" cy="155.0" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="100.0" cy="155.0" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="127.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="127.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="127.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/><circle cx="52.37" cy="72.5" r="22.6" stroke="#6c7884" stroke-width="1.6"/><circle cx="52.37" cy="72.5" r="25.2" stroke="#F1F4F7" stroke-width="2.2"/><circle cx="52.37" cy="72.5" r="27.4" stroke="#9aa5b0" stroke-width=".8"/>
+                </g>
+                <circle cx="100" cy="100" r="92.6" fill="none" stroke="#6E7A86" stroke-width="1.4"/>
+                <circle cx="100" cy="100" r="89.5" fill="none" stroke="#EEF2F5" stroke-width="3"/>
+                <circle cx="100" cy="100" r="86.4" fill="none" stroke="#8C97A3" stroke-width="1"/>
+                <circle cx="100" cy="100" r="27" fill="#D6DDE4" stroke="#83909C" stroke-width="1.4"/>
+                <circle cx="100" cy="100" r="22.5" fill="none" stroke="#F4F7F9" stroke-width="1.3"/>
+                <g fill="#262c33"><circle cx="100" cy="100" r="4.2"/><circle cx="112.5" cy="100.0" r="3.4"/><circle cx="106.25" cy="110.83" r="3.4"/><circle cx="93.75" cy="110.83" r="3.4"/><circle cx="87.5" cy="100.0" r="3.4"/><circle cx="93.75" cy="89.17" r="3.4"/><circle cx="106.25" cy="89.17" r="3.4"/></g>
+              </g>
+              <circle cx="100" cy="100" r="94" fill="url(#cvReelChrome)" mask="url(#cvReelFace)"/>
+              <circle cx="100" cy="100" r="94" fill="url(#cvReelChrome)" opacity=".18"/>
+              <circle cx="100" cy="100" r="94" fill="url(#cvReelGlint)" mask="url(#cvReelFace)"/>
+            </g>
+          </svg>
+    <h1 class="cover-title">
+      <span class="family">The Draper Family</span>
+      <span class="archives">Video Archives</span>
+    </h1>
+    <div class="cover-rule" aria-hidden="true"></div>
+    <p class="cover-tagline">The moments we cherish most, frame by frame.</p>
   </div>
 
   <div class="toolbar">
@@ -1377,7 +1538,27 @@
   // own secret key on the end, e.g.:
   // "https://script.google.com/macros/s/AKfycb.../exec?key=your-secret-here"
   // Leave it as-is to see the built-in sample data below.
-  const DATA_URL = "https://script.google.com/macros/s/AKfycbz_TqOErPH3YMpNKVh4LRVz7fjkqT0P7amTz-wyudVGYIknLLPeFG_my16lMisgCwHzBg/exec?key=@Uburn";
+  // The Apps Script only sends the video list along with the family code word,
+  // which is added to this address when the archive asks for it.
+  const DATA_URL = "https://script.google.com/macros/s/AKfycbz_TqOErPH3YMpNKVh4LRVz7fjkqT0P7amTz-wyudVGYIknLLPeFG_my16lMisgCwHzBg/exec";
+
+  function archiveUrlFor(code){
+    return DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 'code=' + encodeURIComponent(code);
+  }
+  function savedCode(){
+    try { return localStorage.getItem('draperArchiveCode') || ''; } catch (e) { return ''; }
+  }
+
+  // Sign out: forget this device and go back to the welcome page. The saved
+  // copy of the video list goes too, so nothing stays behind on a shared device.
+  function signOut(){
+    try {
+      localStorage.removeItem('draperArchiveUnlockedUntil');
+      localStorage.removeItem('draperArchiveCode');
+      localStorage.removeItem('draperArchive.videos.v2');
+    } catch (e) { /* storage unavailable */ }
+    location.replace(location.href.split('#')[0]);
+  }
 
   // Sample data used until a real endpoint is connected.
   const SAMPLE_VIDEOS = [
@@ -1546,7 +1727,8 @@
     } catch (e) { /* private browsing or full storage: skip saving */ }
   }
 
-  function loadVideos(){
+  // rows: the list the welcome page already fetched while checking the code word.
+  function loadVideos(rows){
     if (!DATA_URL || DATA_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE"){
       videos = SAMPLE_VIDEOS;
       finishLoading();
@@ -1561,12 +1743,16 @@
       finishLoading();
     }
 
-    fetch(DATA_URL)
-      .then(res => {
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        return res.json();
-      })
+    const request = rows
+      ? Promise.resolve(rows)
+      : fetch(archiveUrlFor(savedCode())).then(res => {
+          if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+          return res.json();
+        });
+
+    request
       .then(data => {
+        if (data && data.locked){ signOut(); return; }   // the code word was changed: ask again
         if (data && data.error) throw new Error(data.error);
         const parsed = withDerived(rowsToVideos(data));
         if (!parsed.length){
@@ -2773,10 +2959,7 @@
     openPendingVideo(true);
   });
 
-  // Once the code word is entered, open the video a shared link pointed to.
-  document.addEventListener('archive:unlocked', () => {
-    if (videos.length) openPendingVideo(true);
-  });
+  document.getElementById('signOutBtn').addEventListener('click', signOut);
 
   // ---------- slideshow ----------
   // Steps through whatever list is on screen (the whole archive from the home
@@ -2850,8 +3033,16 @@
   searchEl.addEventListener('input', () => { renderBrowse(); renderGallery(); });
   sortEl.addEventListener('change', renderGallery);
 
-  loadingEl.style.display = 'block';
-  loadVideos();
+  // Behind the welcome page, wait for the code word; the list arrives with it.
+  if (document.documentElement.classList.contains('wg-locked')){
+    document.addEventListener('archive:unlocked', e => {
+      loadingEl.style.display = 'block';
+      loadVideos(e.detail && e.detail.rows);
+    }, { once: true });
+  } else {
+    loadingEl.style.display = 'block';
+    loadVideos();
+  }
 
 </script>
 
@@ -2945,14 +3136,14 @@
 
   var HOLE = 5.4, FRAME = 24, FADE = 95;
   function draw(offset){
-    var holeColor = getComputedStyle(document.documentElement).getPropertyValue('--wg-film-hole').trim() || '#E4E9EE';
+    var holeColor = '#101924';
     ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
     // one soft shadow for the whole strip, cast onto the page
     ctx.save();
-    ctx.shadowColor = 'rgba(29,53,80,0.26)';
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
     ctx.shadowBlur = 10 * scale; ctx.shadowOffsetX = 3 * scale; ctx.shadowOffsetY = (7 + 2000) * scale;
     ctx.beginPath(); ctx.translate(0, -2000); outline(0, N, 1); ctx.fillStyle = '#000'; ctx.fill();
     ctx.restore();
@@ -3016,56 +3207,22 @@
 })();
 </script>
 <script>
-// ---------- welcome gate: film strips, handwriting, code word ----------
+// ---------- welcome gate: handwriting, code word ----------
 (function(){
-  // Sign out: forget this device and go back to the welcome page. The saved
-  // copy of the video list is cleared too, so nothing stays behind on a shared device.
-  var signOutBtn = document.getElementById('signOutBtn');
-  if (signOutBtn) signOutBtn.addEventListener('click', function(){
-    try {
-      localStorage.removeItem('draperArchiveUnlockedUntil');
-      localStorage.removeItem('draperArchive.videos.v2');
-    } catch (e) { /* storage unavailable */ }
-    location.replace(location.href.split('#')[0]);
-  });
-
   var root = document.documentElement;
   var gate = document.getElementById('welcomeGate');
   if (!gate) return;
   if (!root.classList.contains('wg-locked')){ gate.remove(); return; }   // already let in on this device
 
   var REMEMBER_DAYS = 30;
-  var CODE_FINGERPRINT = 'f9c9baac9006160a6d84a09e77cbfeac349c861513e1786ea447e00198068e20';
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Background film strips, drawn once and tiled.
-  (function paintStrips(){
-    var band = '#24476B', frame = '#DDE7F0';
-    var icons = [
-      '<path d="M52 36 L74 48 L52 60 Z" fill="'+band+'"/>',
-      '<path d="M60 62 C40 48 44 34 54 36 C58 37 60 41 60 41 C60 41 62 37 66 36 C76 34 80 48 60 62 Z" fill="'+band+'"/>',
-      '<path d="M60 32 L64 44 L76 44 L66 51 L70 63 L60 56 L50 63 L54 51 L44 44 L56 44 Z" fill="'+band+'"/>',
-      '<circle cx="60" cy="48" r="9" fill="'+band+'"/><g stroke="'+band+'" stroke-width="3" stroke-linecap="round"><path d="M60 30v5M60 61v5M42 48h5M73 48h5M47 35l3 3M70 58l3 3M47 61l3-3M70 38l3-3"/></g>'
-    ];
-    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="96" viewBox="0 0 480 96"><rect width="480" height="96" fill="'+band+'"/>';
-    for (var h = 0; h < 12; h++){
-      s += '<rect x="'+(h*40+12)+'" y="6" width="16" height="10" rx="2" fill="'+frame+'"/>';
-      s += '<rect x="'+(h*40+12)+'" y="80" width="16" height="10" rx="2" fill="'+frame+'"/>';
-    }
-    for (var f = 0; f < 4; f++){
-      s += '<g transform="translate('+(f*120)+',0)"><rect x="8" y="22" width="104" height="52" rx="4" fill="'+frame+'"/>'+icons[f]+'</g>';
-    }
-    s += '</svg>';
-    var url = 'url("data:image/svg+xml;utf8,' + encodeURIComponent(s) + '")';
-    gate.querySelectorAll('.wg-strip').forEach(function(el){ el.style.backgroundImage = url; });
-  })();
 
   // Handwriting: reveal each line of the quote in turn, paced by its length.
   var lines = Array.prototype.slice.call(gate.querySelectorAll('.wg-ln'));
   var signature = document.getElementById('wgSignature');
   function writeQuote(){
     if (reduce) return;
-    var t = 0.9;
+    var t = 1.7;
     lines.forEach(function(ln){
       var dur = Math.max(1.1, ln.textContent.length * 0.075);
       ln.style.setProperty('--delay', t + 's');
@@ -3084,55 +3241,71 @@
     ]).then(writeQuote, writeQuote);
   } else { writeQuote(); }
 
-  // Code word: compared as a fingerprint, ignoring capitals and spaces.
   var form = document.getElementById('wgForm');
   var input = document.getElementById('wgCode');
-  var field = document.getElementById('wgField');
+  var reveal = document.getElementById('wgReveal');
+  var submit = document.getElementById('wgSubmit');
   var message = document.getElementById('wgMessage');
-  var welcome = document.getElementById('wgWelcome');
 
-  function fingerprint(text){
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
-      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2, '0'); }).join('');
-    });
+  // Show or hide what's been typed.
+  reveal.addEventListener('click', function(){
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    reveal.setAttribute('aria-pressed', String(!showing));
+    reveal.setAttribute('aria-label', showing ? 'Show code word' : 'Hide code word');
+    input.focus();
+  });
+
+  function letIn(code, rows){
+    try {
+      localStorage.setItem('draperArchiveCode', code);
+      localStorage.setItem('draperArchiveUnlockedUntil', String(Date.now() + REMEMBER_DAYS * 864e5));
+    } catch (e) { /* private browsing: works for this visit only */ }
+    window.wgStopped = true;
+    root.classList.remove('wg-locked');
+    root.classList.add('wg-unlocking');
+    window.scrollTo(0, 0);
+    // hand the video list to the archive (and open a shared video, if the link had one)
+    document.dispatchEvent(new CustomEvent('archive:unlocked', { detail: { rows: rows } }));
+    gate.classList.add('is-leaving');
+    setTimeout(function(){ gate.remove(); root.classList.remove('wg-unlocking'); }, reduce ? 0 : 900);
   }
 
-  function letIn(){
-    try { localStorage.setItem('draperArchiveUnlockedUntil', String(Date.now() + REMEMBER_DAYS * 864e5)); } catch (e) { /* private browsing */ }
-    welcome.classList.add('is-leaving');
-    setTimeout(function(){
-      window.wgStopped = true;
-      root.classList.remove('wg-locked');
-      root.classList.add('wg-unlocking');
-      gate.remove();
-      window.scrollTo(0, 0);
-      document.dispatchEvent(new Event('archive:unlocked'));   // opens a shared video, if the link had one
-      setTimeout(function(){ root.classList.remove('wg-unlocking'); }, 900);
-    }, reduce ? 0 : 700);
+  function wrong(){
+    message.textContent = 'That isn’t the family code word. Check the spelling and try again.';
+    input.classList.remove('wg-shake'); void input.offsetWidth; input.classList.add('wg-shake');
+    input.select();
   }
 
+  // The archive itself checks the code word: only the right word gets the video list.
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    var guess = input.value.trim().toLowerCase();
-    if (!guess){
+    var code = input.value.trim().toLowerCase();
+    if (!code){
       message.textContent = 'Enter the family code word to continue.';
       input.focus();
       return;
     }
-    if (!(window.crypto && crypto.subtle)){
-      message.textContent = 'This browser can’t check the code word. Try opening the page in Safari or Chrome.';
-      return;
-    }
-    fingerprint(guess).then(function(fp){
-      if (fp === CODE_FINGERPRINT){
-        message.textContent = '';
-        letIn();
-      } else {
-        message.textContent = 'That isn’t the family code word. Check the spelling and try again.';
-        field.classList.remove('wg-shake'); void field.offsetWidth; field.classList.add('wg-shake');
-        input.select();
-      }
-    });
+    message.textContent = '';
+    submit.disabled = true;
+    submit.textContent = 'Opening…';
+    fetch(archiveUrlFor(code))
+      .then(function(res){
+        if (!res.ok) throw new Error('status ' + res.status);
+        return res.json();
+      })
+      .then(function(data){
+        if (data && data.locked){ wrong(); return; }
+        if (!Array.isArray(data)) throw new Error((data && data.error) || 'unexpected reply');
+        letIn(code, data);
+      })
+      .catch(function(){
+        message.textContent = 'The archive couldn’t be reached. Check your connection and try again.';
+      })
+      .then(function(){
+        submit.disabled = false;
+        submit.textContent = 'Open the archives';
+      });
   });
 })();
 </script>
