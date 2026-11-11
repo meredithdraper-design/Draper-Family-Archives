@@ -1640,6 +1640,61 @@
   .notice h2{ color: var(--ink); }
   footer{ font-style: normal; color: var(--ink-faint); padding: 30px 0 40px; }
 
+
+  /* ============================================
+     LIFT: clickable things glow softly off the dark
+     ============================================ */
+  :root{
+    --ink-soft: #B3BFCC;
+    --field: rgba(255,255,255,0.08);
+    --field-line: rgba(255,255,255,0.28);
+    --halo: rgba(130,175,225,0.22);
+    --halo-strong: rgba(150,192,240,0.40);
+  }
+  /* outlined buttons: brighter text, a clearer edge, a faint fill */
+  .btn--line, .surprise-btn, .more-btn, .browse__btn, .slideshow-btn, .chip, .pill,
+  .story-card__btn--line, .reel__card-btn--line{
+    color: #E9EEF4; background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.28);
+    box-shadow: 0 0 14px var(--halo);
+  }
+  .btn--line:hover, .surprise-btn:hover, .more-btn:hover, .browse__btn:hover, .slideshow-btn:hover, .chip:hover, .pill:hover{
+    color: #fff; background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.45);
+    box-shadow: 0 0 20px var(--halo-strong);
+  }
+  .browse__btn.has-selection, .browse__btn[aria-expanded="true"]{
+    background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.5);
+  }
+  /* solid buttons: a soft light around them */
+  .btn--solid, .chip[data-active="true"], .story__play, .story-card__btn--play, .reel__card-btn:not(.reel__card-btn--line){
+    box-shadow: 0 0 22px var(--halo-strong), 0 4px 14px rgba(0,0,0,0.35);
+  }
+  .btn--solid:hover, .story__play:hover{ box-shadow: 0 0 30px rgba(170,205,245,0.45), 0 6px 18px rgba(0,0,0,0.35); }
+  #search::placeholder{ color: #8E9BAB; }
+  .browse__label, .yearbar__lead, .status-line{ color: #8E9BAB; }
+  .yearbar__link{ color: #C9D3DE; }
+  .signout{ color: #C9D3DE; }
+  .story__back{ color: #C9D3DE; }
+
+  /* video cards: a gentle backlight that brightens on hover */
+  .card__photo, .hero__poster .card__photo{
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.07), 0 10px 26px rgba(0,0,0,0.45), 0 0 30px var(--halo);
+    transition: box-shadow .35s ease;
+  }
+  .card:hover .card__photo, .card:focus-visible .card__photo, .hero__poster:hover .card__photo{
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 14px 32px rgba(0,0,0,0.5), 0 0 40px var(--halo-strong);
+  }
+  .card--collection .card__photo{
+    box-shadow: 6px -6px 0 -1px #1E2A39, 12px -12px 0 -2px #18222F, 0 0 30px var(--halo);
+  }
+  .card--collection:hover .card__photo{
+    box-shadow: 6px -6px 0 -1px #24324393, 12px -12px 0 -2px #1C2735, 0 0 40px var(--halo-strong);
+  }
+  .card__title{ color: #F1F4F8; }
+  .card__meta{ color: #93A1B1; }
+  .story-card{ box-shadow: 0 20px 44px rgba(0,0,0,0.4), 0 0 36px var(--halo); }
+  .story-card:hover{ box-shadow: 0 24px 50px rgba(0,0,0,0.45), 0 0 46px var(--halo-strong); }
+  @media (prefers-reduced-motion: reduce){ .card__photo{ transition: none; } }
+
   /* ============================================
      WELCOME GATE
      Shown until the family code word is entered.
