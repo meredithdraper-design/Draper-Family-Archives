@@ -1027,6 +1027,18 @@
   }
 
 
+  /* small sign-out link in the top corner of the archive */
+  .signout{
+    position: absolute; top: 12px; right: 16px; z-index: 2;
+    font: inherit; font-size: 0.85rem; color: var(--ink-soft);
+    background: none; border: 0; padding: 6px 8px; cursor: pointer;
+    text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
+    transition: color .2s ease, text-decoration-color .2s ease;
+  }
+  .signout:hover{ color: var(--maroon); text-decoration-color: currentColor; }
+  .signout:focus-visible{ outline: 2px solid var(--maroon-light); outline-offset: 2px; border-radius: 4px; }
+  @media (max-width: 520px){ .signout{ top: 6px; right: 8px; } }
+
   /* ============================================
      WELCOME GATE
      Shown until the family code word is entered.
@@ -1271,6 +1283,8 @@
 
 
 <div class="page-frame">
+
+  <button type="button" class="signout" id="signOutBtn">Sign out</button>
 
   <div class="cover">
     <div class="crest">D</div>
@@ -3004,6 +3018,17 @@
 <script>
 // ---------- welcome gate: film strips, handwriting, code word ----------
 (function(){
+  // Sign out: forget this device and go back to the welcome page. The saved
+  // copy of the video list is cleared too, so nothing stays behind on a shared device.
+  var signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) signOutBtn.addEventListener('click', function(){
+    try {
+      localStorage.removeItem('draperArchiveUnlockedUntil');
+      localStorage.removeItem('draperArchive.videos.v2');
+    } catch (e) { /* storage unavailable */ }
+    location.replace(location.href.split('#')[0]);
+  });
+
   var root = document.documentElement;
   var gate = document.getElementById('welcomeGate');
   if (!gate) return;
