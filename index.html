@@ -2944,8 +2944,7 @@
       homeEl.appendChild(favSec);
     }
 
-    const cols = collectionsList();
-    if (cols.length) homeEl.appendChild(collectionsSection(cols));
+    // Collections live in the Browse by menu rather than on the home page.
 
     const groups = groupByYear();
     if (groups.length){
